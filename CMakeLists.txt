@@ -3,11 +3,19 @@ cmake_minimum_required(VERSION 3.10)
 project(ImgConv)
 set(CMAKE_CXX_STANDARD 17)
 
-set(LIBPNG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libpng/lib/libpng.a)
-set(LIBJPEG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/lib/libjpeg.a)
-
-set(LIBPNG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libpng/include)
-set(LIBJPEG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/include)
+if(UNIX)
+	set(LIBPNG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libpng/lib/libpng.a)
+	set(LIBJPEG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/lib/libjpeg.a)
+	set(LIBPNG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libpng/include)
+	set(LIBJPEG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/include)
+elseif(WIN32)
+	set(LIBPNG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libpng/lib/libpng16.lib)
+	set(LIBJPEG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/lib/jpeg.lib)
+	set(LIBPNG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libpng/include)
+	set(LIBJPEG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/include)
+else()
+    message(FATAL_ERROR "Unsupported platform")
+endif()
 
 set(SOURCES
     src/main.cpp
