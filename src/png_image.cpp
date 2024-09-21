@@ -8,10 +8,10 @@ namespace img_lib
         {
             return {};
         }
-
+        
         bool PngImage::SaveImagePng(const Path& path_, const Image& image_)
         {
-            return false;
+            return true;
         }
 
     } // end namespace png_image

@@ -74,6 +74,16 @@ namespace img_lib
 
         int GetStep() const;
 
+        std::vector<Color>& GetPixels() 
+        {
+            return pixels; 
+        }
+
+        const std::vector<Color>& GetPixels() const 
+        {
+            return pixels;
+        }
+
     private:
 
         int width = 0;

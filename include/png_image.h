@@ -1,7 +1,11 @@
-#pragma once
+#pragma once 
 
 #include "image.h"
-#include <png.h>
+
+extern "C"
+{
+	#include <png.h>
+}
 
 namespace img_lib
 {

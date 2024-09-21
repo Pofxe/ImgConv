@@ -108,9 +108,10 @@ void SaveImage(const Path& output_file_, const Image& image_, Format format_)
     case Format::JPEG:
         jpeg_image.SaveImageJpeg(output_file_, image_);
         break;
-
+    
     default:
         throw std::runtime_error("Unsupported output file format"s);
+    
     }
 }
 
