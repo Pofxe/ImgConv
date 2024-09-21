@@ -5,9 +5,10 @@ Supports:
 - .bmp
 - .ppm
 - .p3
-
+- jpg/jpeg
 Planning:
 - .ico
+- .png
 
 ## Install ##
 
@@ -32,4 +33,8 @@ cmake --build .
 
 ```bash
 ./ImgConv <input_file> <output_file>
+```
+Example
+```bash
+./ImgConv image1.ppm image2.bmp
 ```
