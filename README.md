@@ -6,6 +6,7 @@ Supports:
 - .ppm
 - .p3
 - jpg/jpeg
+  
 Planning:
 - .ico
 - .png
