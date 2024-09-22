@@ -10,6 +10,7 @@ namespace img_lib
             if (!file)
             {
                 throw std::runtime_error("Failed to open TIFF file: "s + path_.string());
+                return {};
             }
 
             TiffHeader header;
@@ -18,6 +19,7 @@ namespace img_lib
             if (!file || header.byteOrder != 0x4949 || header.magic != 42)
             {
                 throw std::runtime_error("Invalid TIFF file: "s + path_.string());
+                return {};
             }
 
             std::vector<IFDEntry> ifdEntries;
@@ -82,6 +84,7 @@ namespace img_lib
             if (bitsPerSample != 8 || samplesPerPixel != 3)
             {
                 throw std::runtime_error("Unsupported TIFF format"s);
+                return {};
             }
 
             Image image(width, height, Color::Black());
@@ -103,6 +106,8 @@ namespace img_lib
                     image.GetPixel(x, y) = { buffer[index], buffer[index + 1], buffer[index + 2] };
                 }
             }
+
+            file.close();
             return image;
         }
 
@@ -112,6 +117,7 @@ namespace img_lib
             if (!file)
             {
                 throw std::runtime_error("Failed to create TIFF file: "s + path_.string());
+                return false;
             }
 
             uint32_t ifdOffset = sizeof(TiffHeader);
@@ -176,6 +182,8 @@ namespace img_lib
                     file.write(reinterpret_cast<const char*>(&color.b), sizeof(color.b));
                 }
             }
+
+            file.close();
             return true;
         }
 

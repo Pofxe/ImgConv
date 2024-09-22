@@ -4,12 +4,12 @@ namespace img_lib
 {
     namespace ppm_image
     {
-        Image PpmImage::LoadImagePPM(const Path& file_)
+        Image PpmImage::LoadImagePPM(const Path& path_)
         {
-            std::ifstream file(file_, std::ios::binary);
+            std::ifstream file(path_, std::ios::binary);
             if (!file)
             {
-                throw std::runtime_error("Load file is not open"s);
+                throw std::runtime_error("Failed to open PPM/P3 file: "s + path_.string());
                 return {};
             }
 
@@ -18,17 +18,19 @@ namespace img_lib
 
             if (ppm_type == PPM_TYPE_P3)
             {
-                return LoadP3(file_);
+                return LoadP3(path_);
             }
             else if (ppm_type == PPM_TYPE_P6)
             {
-                return LoadP6(file_);
+                return LoadP6(path_);
             }
             else
             {
                 throw std::runtime_error("Unsupported PPM format"s);
                 return {};
             }
+
+            file.close();
         }
 
         bool PpmImage::SaveImagePPM(const Path& file_, const Image& image_)
@@ -49,12 +51,12 @@ namespace img_lib
             }
         }
 
-        Image PpmImage::LoadP3(const Path& file_)
+        Image PpmImage::LoadP3(const Path& path_)
         {
-            std::ifstream file(file_);
+            std::ifstream file(path_);
             if (!file)
             {
-                throw std::runtime_error("P3 load file is not open"s);
+                throw std::runtime_error("Failed to open P3 file: "s + path_.string());
                 return {};
             }
 
@@ -85,19 +87,21 @@ namespace img_lib
                     line[x] = { r, g, b, 255 };
                 }
             }
+
+            file.close();
             return image;
         }
 
-        bool PpmImage::SaveP3(const Path& file_, const Image& image_)
+        bool PpmImage::SaveP3(const Path& path_, const Image& image_)
         {
-            std::ofstream out(file_);
-            if (!out)
+            std::ofstream file(path_);
+            if (!file)
             {
-                throw std::runtime_error("Save file is not open"s);
+                throw std::runtime_error("Failed to create P3 file: "s + path_.string());
                 return false;
             }
 
-            out << PPM_TYPE_P3 << '\n' << image_.GetWidth() << ' ' << image_.GetHeight() << '\n' << PPM_MAX << '\n';
+            file << PPM_TYPE_P3 << '\n' << image_.GetWidth() << ' ' << image_.GetHeight() << '\n' << PPM_MAX << '\n';
 
             const int w = image_.GetWidth();
             const int h = image_.GetHeight();
@@ -110,19 +114,21 @@ namespace img_lib
                 {
                     const Color& color = line[x];
 
-                    out << color.r << ' ' << color.g << ' ' << color.b << ' ';
+                    file << color.r << ' ' << color.g << ' ' << color.b << ' ';
                 }
-                out << '\n';
+                file << '\n';
             }
-            return out.good();
+
+            file.close();
+            return file.good();
         }
 
-        Image PpmImage::LoadP6(const Path& file)
+        Image PpmImage::LoadP6(const Path& path_)
         {
-            std::ifstream file_(file, std::ios::binary);
-            if (!file_)
+            std::ifstream file(path_, std::ios::binary);
+            if (!file)
             {
-                throw std::runtime_error("P6 load file is not open"s);
+                throw std::runtime_error("Failed to open PPM file: "s + path_.string());
                 return {};
             }
 
@@ -131,35 +137,35 @@ namespace img_lib
             int h = 0;
             int color_max = 0;
 
-            file_ >> sign;
+            file >> sign;
             if (sign != PPM_TYPE_P6)
             {
                 return {};
             }
             
-            file_ >> w >> h;
+            file >> w >> h;
             
-            file_ >> color_max;
+            file >> color_max;
             if (color_max != PPM_MAX)
             {
                 return {};
             }
 
-            const char next = file_.get();
+            const char next = file.get();
             if (next != '\n')
             {
                 return {};
             }
 
-            Image result(w, h, Color::Black());
+            Image image(w, h, Color::Black());
             std::vector<char> buff(w * 3);
 
             for (int y = 0; y < h; ++y)
             {
-                Color* line = result.GetLine(y);
+                Color* line = image.GetLine(y);
 
-                file_.read(buff.data(), w * 3);
-                if (!file_)
+                file.read(buff.data(), w * 3);
+                if (!file)
                 {
                     return {};
                 }
@@ -171,19 +177,21 @@ namespace img_lib
                     line[x].b = buff[x * 3 + 2];
                 }
             }
-            return result;
+
+            file.close();
+            return image;
         }
 
-        bool PpmImage::SaveP6(const Path& file_, const Image& image_)
+        bool PpmImage::SaveP6(const Path& path_, const Image& image_)
         {
-            std::ofstream out(file_, std::ios::binary);
-            if (!out)
+            std::ofstream file(path_, std::ios::binary);
+            if (!file)
             {
-                throw std::runtime_error("Save file is not open"s);
+                throw std::runtime_error("Failed to create PPM file: "s + path_.string());
                 return false;
             }
 
-            out << PPM_TYPE_P6 << '\n' << image_.GetWidth() << ' ' << image_.GetHeight() << '\n' << PPM_MAX << '\n';
+            file << PPM_TYPE_P6 << '\n' << image_.GetWidth() << ' ' << image_.GetHeight() << '\n' << PPM_MAX << '\n';
 
             const int w = image_.GetWidth();
             const int h = image_.GetHeight();
@@ -199,13 +207,14 @@ namespace img_lib
                     buff[x * 3 + 1] = line[x].g;
                     buff[x * 3 + 2] = line[x].b;
                 }
-                out.write(buff.data(), w * 3);
-                if (!out)
+                file.write(buff.data(), w * 3);
+                if (!file)
                 {
                     return false;
                 }
             }
-            return out.good();
+            file.close();
+            return file.good();
         }
 
     } // end namespace ppm_image

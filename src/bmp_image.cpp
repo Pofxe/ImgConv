@@ -12,25 +12,25 @@ namespace img_lib
             return alignment * ((w_ * bytesPerPixel + (alignment - 1)) / alignment);
         }
 
-        Image BmpImage::LoadImageBMP(const Path& file_)
+        Image BmpImage::LoadImageBMP(const Path& path_)
         {
-            std::ifstream ifs(file_, std::ios::binary);
-            if (!ifs)
+            std::ifstream file(path_, std::ios::binary);
+            if (!file)
             {
-                throw std::runtime_error("Load file is not open"s);
+                throw std::runtime_error("Failed to open BMP file: "s + path_.string());
                 return {};
             }
 
             BitmapFileHeader file_header;
-            ifs.read(reinterpret_cast<char*>(&file_header), sizeof(file_header));
-            if (file_header.file_type != 0x4D42 || !ifs)
+            file.read(reinterpret_cast<char*>(&file_header), sizeof(file_header));
+            if (file_header.file_type != 0x4D42 || !file)
             {
                 return {};
             }
 
             BitmapInfoHeader info_header;
-            ifs.read(reinterpret_cast<char*>(&info_header), sizeof(info_header));
-            if (info_header.bit_count != 24 || info_header.compression != 0 || !ifs)
+            file.read(reinterpret_cast<char*>(&info_header), sizeof(info_header));
+            if (info_header.bit_count != 24 || info_header.compression != 0 || !file)
             {
                 return {};
             }
@@ -43,8 +43,8 @@ namespace img_lib
             std::vector<uint8_t> row(stride);
             for (int y = height - 1; y >= 0; --y)
             {
-                ifs.read(reinterpret_cast<char*>(row.data()), stride);
-                if (!ifs)
+                file.read(reinterpret_cast<char*>(row.data()), stride);
+                if (!file)
                 {
                     return {};
                 }
@@ -58,15 +58,17 @@ namespace img_lib
                     row_data[x].r = row[x * 3 + 2];
                 }
             }
+
+            file.close();
             return image;
         }
 
-        bool BmpImage::SaveImageBMP(const Path& file_, const Image& image_)
+        bool BmpImage::SaveImageBMP(const Path& path_, const Image& image_)
         {
-            std::ofstream ofs(file_, std::ios::binary);
-            if (!ofs)
+            std::ofstream file(path_, std::ios::binary);
+            if (!file)
             {
-                throw std::runtime_error("Save file is not open"s);
+                throw std::runtime_error("Failed to create BMP file: "s + path_.string());
                 return false;
             }
 
@@ -95,14 +97,14 @@ namespace img_lib
             info_header.colors_used = 0;
             info_header.colors_important = 0x1000000;
 
-            ofs.write(reinterpret_cast<const char*>(&file_header), sizeof(file_header));
-            if (!ofs)
+            file.write(reinterpret_cast<const char*>(&file_header), sizeof(file_header));
+            if (!file)
             {
                 return false;
             }
 
-            ofs.write(reinterpret_cast<const char*>(&info_header), sizeof(info_header));
-            if (!ofs)
+            file.write(reinterpret_cast<const char*>(&info_header), sizeof(info_header));
+            if (!file)
             {
                 return false;
             }
@@ -123,12 +125,14 @@ namespace img_lib
                     row[x] = 0;
                 }
 
-                ofs.write(reinterpret_cast<const char*>(row.data()), stride);
-                if (!ofs)
+                file.write(reinterpret_cast<const char*>(row.data()), stride);
+                if (!file)
                 {
                     return false;
                 }
             }
+
+            file.close();
             return true;
         }    
 

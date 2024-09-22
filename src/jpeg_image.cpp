@@ -40,12 +40,12 @@ namespace img_lib
             jpeg_decompress_struct cinfo;
             my_error_mgr jerr;
     
-            FILE* infile;
+            FILE* file;
             JSAMPARRAY buffer;
             int row_stride;
 
             #ifdef _MSC_VER
-            if ((infile = _wfopen(path_.wstring().c_str(), L"rb")) == NULL)
+            if ((file = _wfopen(path_.wstring().c_str(), L"rb")) == NULL)
             {
             #else
             if ((infile = fopen(path_.string().c_str(), "rb")) == NULL) 
@@ -60,12 +60,12 @@ namespace img_lib
             if (setjmp(jerr.setjmp_buffer)) 
             {
                 jpeg_destroy_decompress(&cinfo);
-                fclose(infile);
+                fclose(file);
                 return {};
             }
 
             jpeg_create_decompress(&cinfo);
-            jpeg_stdio_src(&cinfo, infile);
+            jpeg_stdio_src(&cinfo, file);
             (void) jpeg_read_header(&cinfo, TRUE);
 
             cinfo.out_color_space = JCS_RGB;
@@ -75,28 +75,28 @@ namespace img_lib
     
             row_stride = cinfo.output_width * cinfo.output_components;
             buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
-            Image result(cinfo.output_width, cinfo.output_height, Color::Black());
+            Image image(cinfo.output_width, cinfo.output_height, Color::Black());
 
             while (cinfo.output_scanline < cinfo.output_height) 
             {
                 int y = cinfo.output_scanline;
                 (void) jpeg_read_scanlines(&cinfo, buffer, 1);
 
-                SaveSсanlineToImage(buffer[0], y, result);
+                SaveSсanlineToImage(buffer[0], y, image);
             }
             
             (void) jpeg_finish_decompress(&cinfo);
             jpeg_destroy_decompress(&cinfo);
-            fclose(infile);
+            fclose(file);
 
-            return result;
+            return image;
         }
 
         bool JpegImage::SaveImageJPEG(const Path& path_, const Image& image_)
         {
             jpeg_compress_struct cinfo;
             jpeg_error_mgr jerr;
-            FILE * outfile;      
+            FILE * file;      
             JSAMPROW row_pointer[1];  
             int row_stride;       
 
@@ -104,7 +104,7 @@ namespace img_lib
             jpeg_create_compress(&cinfo);
 
             #ifdef _MSC_VER
-            if ((outfile = _wfopen(path_.wstring().c_str(), L"wb")) == NULL) 
+            if ((file = _wfopen(path_.wstring().c_str(), L"wb")) == NULL) 
             {
             #else
             if ((outfile = fopen(path_.string().c_str(), "wb")) == NULL) 
@@ -112,7 +112,7 @@ namespace img_lib
             #endif
                 return false;
             }
-            jpeg_stdio_dest(&cinfo, outfile);
+            jpeg_stdio_dest(&cinfo, file);
 
 
             cinfo.image_width = image_.GetWidth(); 
@@ -139,7 +139,7 @@ namespace img_lib
             }
 
             jpeg_finish_compress(&cinfo);
-            fclose(outfile);
+            fclose(file);
             jpeg_destroy_compress(&cinfo);
 
             return true;
