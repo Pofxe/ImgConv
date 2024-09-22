@@ -15,7 +15,7 @@ using namespace std;
 using img_lib::Image;
 using img_lib::Path;
 
-enum class Format { PPM, BMP, TIFF, PNG, JPEG, UNKNOWN };
+enum class Format { PPM, BMP, TIFF, PNG, JPEG, ICO, UNKNOWN };
 
 Format GetFormatByExtension(const Path& input_file_)
 {
@@ -46,6 +46,11 @@ Format GetFormatByExtension(const Path& input_file_)
         return Format::JPEG;
     }
 
+    if (ext == ".ico"s)
+    {
+        return Format::ICO;
+    }
+
     return Format::UNKNOWN;
 }
 
@@ -56,6 +61,7 @@ Image LoadImage(const Path& input_file_, Format format_)
     img_lib::tiff_image::TiffImage tiff_image;
     img_lib::png_image::PngImage png_image;
     img_lib::jpeg_image::JpegImage jpeg_image;
+    img_lib::ico_image::IcoImage ico_image;
 
     switch (format_) 
     {
@@ -66,13 +72,16 @@ Image LoadImage(const Path& input_file_, Format format_)
         return bmp_image.LoadImageBMP(input_file_);
 
     case Format::TIFF:
-        return tiff_image.LoadImageTiff(input_file_);
+        return tiff_image.LoadImageTIFF(input_file_);
 
     case Format::PNG:
-        return png_image.LoadImagePng(input_file_);
+        return png_image.LoadImagePNG(input_file_);
 
     case Format::JPEG:
-        return jpeg_image.LoadImageJpeg(input_file_);
+        return jpeg_image.LoadImageJPEG(input_file_);
+
+    case Format::ICO:
+        return ico_image.LoadImageICO(input_file_);
 
     default:
         throw std::runtime_error("Unsupported input file format"s);
@@ -86,6 +95,7 @@ void SaveImage(const Path& output_file_, const Image& image_, Format format_)
     img_lib::tiff_image::TiffImage tiff_image;
     img_lib::png_image::PngImage png_image;
     img_lib::jpeg_image::JpegImage jpeg_image;
+    img_lib::ico_image::IcoImage ico_image;
 
     switch (format_) 
     {
@@ -98,17 +108,21 @@ void SaveImage(const Path& output_file_, const Image& image_, Format format_)
         break;
 
     case Format::TIFF:
-        tiff_image.SaveImageTiff(output_file_, image_);
+        tiff_image.SaveImageTIFF(output_file_, image_);
         break;
 
     case Format::PNG:
-        png_image.SaveImagePng(output_file_, image_);
+        png_image.SaveImagePNG(output_file_, image_);
         break;
 
     case Format::JPEG:
-        jpeg_image.SaveImageJpeg(output_file_, image_);
+        jpeg_image.SaveImageJPEG(output_file_, image_);
         break;
     
+    case Format::ICO:
+        ico_image.SaveImageICO(output_file_, image_);
+        break;
+
     default:
         throw std::runtime_error("Unsupported output file format"s);
     

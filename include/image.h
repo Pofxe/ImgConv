@@ -14,12 +14,6 @@ namespace img_lib
     using namespace std::string_literals;
     using Path = std::filesystem::path;
 
-    struct Size
-    {
-        int width = 0;
-        int height = 0;
-    };
-
     struct Color
     {
         static Color Black()
@@ -64,6 +58,9 @@ namespace img_lib
         const Color& GetPixel(int x_, int y_) const;
         Color& GetPixel(int x_, int y_);
 
+        std::vector<Color>& GetPixels();
+        const std::vector<Color>& GetPixels() const;
+
         void SetPixel(int x, int y, const Color& pixel);
 
         Color* GetLine(int y_);
@@ -73,16 +70,6 @@ namespace img_lib
         int GetHeight() const;
 
         int GetStep() const;
-
-        std::vector<Color>& GetPixels() 
-        {
-            return pixels; 
-        }
-
-        const std::vector<Color>& GetPixels() const 
-        {
-            return pixels;
-        }
 
     private:
 

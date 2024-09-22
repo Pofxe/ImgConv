@@ -58,6 +58,16 @@ namespace img_lib
         pixels[y_ * width + x_] = pixel_;
     }
 
+    std::vector<Color>& Image::GetPixels()
+    {
+        return pixels;
+    }
+
+    const std::vector<Color>& Image::GetPixels() const
+    {
+        return pixels;
+    }
+
     Color* Image::GetLine(int y_)
     {
         CheckBounds(0, y_);

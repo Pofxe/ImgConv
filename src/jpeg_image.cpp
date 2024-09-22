@@ -35,7 +35,7 @@ namespace img_lib
             }
         }
 
-        Image JpegImage::LoadImageJpeg(const Path& path_)
+        Image JpegImage::LoadImageJPEG(const Path& path_)
         {
             jpeg_decompress_struct cinfo;
             my_error_mgr jerr;
@@ -92,7 +92,7 @@ namespace img_lib
             return result;
         }
 
-        bool JpegImage::SaveImageJpeg(const Path& path_, const Image& image_)
+        bool JpegImage::SaveImageJPEG(const Path& path_, const Image& image_)
         {
             jpeg_compress_struct cinfo;
             jpeg_error_mgr jerr;

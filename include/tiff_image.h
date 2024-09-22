@@ -11,8 +11,8 @@ namespace img_lib
         {
         public:
 
-            Image LoadImageTiff(const Path& path_);
-            bool SaveImageTiff(const Path& path_, const Image& image_);
+            Image LoadImageTIFF(const Path& path_);
+            bool SaveImageTIFF(const Path& path_, const Image& image_);
 
         private:
 

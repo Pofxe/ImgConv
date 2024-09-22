@@ -4,7 +4,7 @@ namespace img_lib
 {
     namespace tiff_image
     {
-        Image TiffImage::LoadImageTiff(const Path& path_)
+        Image TiffImage::LoadImageTIFF(const Path& path_)
         {
             std::ifstream file(path_, std::ios::binary);
             if (!file)
@@ -106,7 +106,7 @@ namespace img_lib
             return image;
         }
 
-        bool TiffImage::SaveImageTiff(const Path& path_, const Image& image_)
+        bool TiffImage::SaveImageTIFF(const Path& path_, const Image& image_)
         {
             std::ofstream file(path_, std::ios::binary);
             if (!file)
