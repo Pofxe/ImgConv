@@ -16,7 +16,7 @@ namespace img_lib
 
 		private:
 
-			struct IcoHeader 
+			struct IcoHeader
 			{
 				uint16_t reserved;   // Reserved, always 0
 				uint16_t type;       // Resource type, always 1 for ICO
@@ -35,30 +35,21 @@ namespace img_lib
 				uint32_t offset;     // Offset of image data from the start of the file
 			};
 
-			PACKED_STRUCT_BEGIN BmpHeader 
+			PACKED_STRUCT_BEGIN BmpHeader
 			{
-				uint16_t bfType;          // BMP signature: 0x4D42 (BM)
-			    uint32_t bfSize;          // BMP file size
-			    uint16_t bfReserved1;     // Reserved: 0
-			    uint16_t bfReserved2;     // Reserved: 0
-			    uint32_t bfOffBits;       // Offset of image data from the start of the file
-			    uint32_t biSize;          // Size of the BMP header
-			    uint32_t biWidth;         // Image width
-			    uint32_t biHeight;        // Image height (negative for top-left origin)
-			    uint16_t biPlanes;        // Always 1
-			    uint16_t biBitCount;      // Color depth (32 bits)
-			    uint32_t biCompression;   // Compression: 0 (no compression)
-			    uint32_t biSizeImage;     // Size of image data
-			    uint32_t biXPelsPerMeter; // Horizontal resolution (0)
-			    uint32_t biYPelsPerMeter; // Vertical resolution (0)
-			    uint32_t biClrUsed;       // Number of colors used (0)
-			    uint32_t biClrImportant;  // Number of important colors (0)
+				uint32_t biSize;          // Size of the structure in bytes
+				int32_t biWidth;          // Width of the image in pixels
+				int32_t biHeight;         // Height of the image in pixels (doubled for the mask)
+				uint16_t biPlanes;        // Planes (should be 1)
+				uint16_t biBitCount;      // Bits per pixel (e.g., 32 for RGBA)
+				uint32_t biCompression;   // Compression type (0 for BI_RGB, no compression)
+				uint32_t biSizeImage;     // Size of the image in bytes
+				int32_t biXPelsPerMeter;  // Horizontal resolution (pixels per meter)
+				int32_t biYPelsPerMeter;  // Vertical resolution (pixels per meter)
+				uint32_t biClrUsed;       // Number of colors used (0 for all)
+				uint32_t biClrImportant;  // Number of important colors (0 for all)
 			}PACKED_STRUCT_END
-
-			Image Resize(int newWidth_, int newHeight_, const Image& image_);
-        };
-
-		
+		};
 
 	} // end namespace ico_image
 

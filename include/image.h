@@ -16,6 +16,10 @@ namespace img_lib
 
     struct Color
     {
+        Color() = default;
+        Color(uint8_t r_, uint8_t g_, uint8_t b_) : r(r_), g(g_), b(b_) {}
+        Color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_) : r(r_), g(g_), b(b_), a(a_) {}
+
         static Color Black()
         {
             return { 0, 0, 0, 255 };
@@ -31,26 +35,35 @@ namespace img_lib
         uint8_t b;
         uint8_t a;
 
-        Color operator*(float scalar) const 
+        Color operator*(float scalar_) const
         {
-            return 
+            return
             {
-                static_cast<uint8_t>(r * scalar),
-                static_cast<uint8_t>(g * scalar),
-                static_cast<uint8_t>(b * scalar),
-                static_cast<uint8_t>(a * scalar)
+                static_cast<uint8_t>(r * scalar_),
+                static_cast<uint8_t>(g * scalar_),
+                static_cast<uint8_t>(b * scalar_),
+                static_cast<uint8_t>(a * scalar_)
             };
         }
 
-        Color operator+(const Color& other) const 
+        Color operator+(const Color& other_) const
         {
-            return 
+            return
             {
-                static_cast<uint8_t>(r + other.r),
-                static_cast<uint8_t>(g + other.g),
-                static_cast<uint8_t>(b + other.b),
-                static_cast<uint8_t>(a + other.a)
+                static_cast<uint8_t>(r + other_.r),
+                static_cast<uint8_t>(g + other_.g),
+                static_cast<uint8_t>(b + other_.b),
+                static_cast<uint8_t>(a + other_.a)
             };
+        }
+
+        Color& operator+=(const Color& other_) 
+        {
+            r += other_.r;
+            g += other_.g;
+            b += other_.b;
+            a += other_.a;
+            return *this;
         }
     };
 
@@ -84,8 +97,6 @@ namespace img_lib
         std::vector<Color>& GetPixels();
         const std::vector<Color>& GetPixels() const;
 
-        void SetPixel(int x, int y, const Color& pixel);
-
         Color* GetLine(int y_);
         const Color* GetLine(int y_) const;
 
@@ -93,6 +104,12 @@ namespace img_lib
         int GetHeight() const;
 
         int GetStep() const;
+
+        const uint8_t* GetData() const;
+
+        void SetPixel(int x, int y, const Color& pixel);
+
+        Image ResizeImage(int newWidth_, int newHeight_) const;
 
     private:
 
@@ -103,6 +120,9 @@ namespace img_lib
         std::vector<Color> pixels;
 
         void CheckBounds(int x_, int y_) const;
+
+        Color LanczosInterpolation(float x_, float y_, int a_ = 2) const;
+        float LanczosWeight(float t_, int a_) const;
     };
 
 }//end namespace img_lib
