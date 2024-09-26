@@ -48,7 +48,7 @@ namespace img_lib
             if ((file = _wfopen(path_.wstring().c_str(), L"rb")) == NULL)
             {
             #else
-            if ((infile = fopen(path_.string().c_str(), "rb")) == NULL) 
+            if ((file = fopen(path_.string().c_str(), "rb")) == NULL) 
             {
             #endif
                 return {};
@@ -107,7 +107,7 @@ namespace img_lib
             if ((file = _wfopen(path_.wstring().c_str(), L"wb")) == NULL) 
             {
             #else
-            if ((outfile = fopen(path_.string().c_str(), "wb")) == NULL) 
+            if ((file = fopen(path_.string().c_str(), "wb")) == NULL) 
             {
             #endif
                 return false;
