@@ -12,7 +12,7 @@ namespace img_lib
             return alignment * ((w_ * bytesPerPixel + (alignment - 1)) / alignment);
         }
 
-        Image BmpImage::LoadImageBMP(const Path& path_)
+        const Image BmpImage::LoadImageBMP(const Path& path_)
         {
             std::ifstream file(path_, std::ios::binary);
             if (!file)
@@ -23,6 +23,10 @@ namespace img_lib
 
             BitmapFileHeader file_header;
             file.read(reinterpret_cast<char*>(&file_header), sizeof(file_header));
+            if (!file)
+            {
+                return {};
+            }
             if (file_header.file_type != 0x4D42 || !file)
             {
                 return {};
@@ -30,7 +34,15 @@ namespace img_lib
 
             BitmapInfoHeader info_header;
             file.read(reinterpret_cast<char*>(&info_header), sizeof(info_header));
-            if (info_header.bit_count != 24 || info_header.compression != 0 || !file)
+            if (!file)
+            {
+                return {};
+            }
+            if (info_header.compression != 0 || !file)
+            {
+                return {};
+            }
+            if (info_header.bit_count != 24 && info_header.bit_count != 32)
             {
                 return {};
             }
@@ -40,30 +52,67 @@ namespace img_lib
             int stride = GetBMPStride(width);
 
             Image image(width, height, Color::Black());
-            std::vector<uint8_t> row(stride);
-            for (int y = height - 1; y >= 0; --y)
+
+            if (info_header.bit_count == 32)
             {
-                file.read(reinterpret_cast<char*>(row.data()), stride);
-                if (!file)
+                for (int y = height - 1; y >= 0; --y)
                 {
-                    return {};
+                    for (int x = 0; x < width; ++x)
+                    {
+                        uint8_t b = 0;
+                        uint8_t g = 0;
+                        uint8_t r = 0;
+                        uint8_t a = 0;
+
+                        file.read(reinterpret_cast<char*>(&b), sizeof(uint8_t));
+                        file.read(reinterpret_cast<char*>(&g), sizeof(uint8_t));
+                        file.read(reinterpret_cast<char*>(&r), sizeof(uint8_t));
+                        file.read(reinterpret_cast<char*>(&a), sizeof(uint8_t));
+
+                        if (!file)
+                        {
+                            return {};
+                        }
+                        Color pixel(r, g, b, a);
+                        image.SetPixel(x, y, pixel);
+                    }
                 }
-
-                Color* row_data = image.GetLine(y);
-
-                for (int x = 0; x < width; ++x)
+            }
+            else if (info_header.bit_count == 24)
+            {
+                for (int y = height - 1; y >= 0; --y)
                 {
-                    row_data[x].b = row[x * 3 + 0];
-                    row_data[x].g = row[x * 3 + 1];
-                    row_data[x].r = row[x * 3 + 2];
+                    for (int x = 0; x < width; ++x)
+                    {
+                        uint8_t b = 0;
+                        uint8_t g = 0;
+                        uint8_t r = 0;
+
+                        file.read(reinterpret_cast<char*>(&b), sizeof(uint8_t));
+                        file.read(reinterpret_cast<char*>(&g), sizeof(uint8_t));
+                        file.read(reinterpret_cast<char*>(&r), sizeof(uint8_t));
+
+                        if (!file)
+                        {
+                            return {};
+                        }
+
+                        Color pixel(r, g, b, 255);
+                        image.SetPixel(x, y, pixel);
+                    }
                 }
+            }
+            else
+            {
+                throw std::runtime_error("Unsupported color depth"s);
+                return {};
             }
 
             file.close();
             return image;
         }
 
-        bool BmpImage::SaveImageBMP(const Path& path_, const Image& image_)
+        bool BmpImage::SaveImageBMP(const Path& path_, const Image& image_) const
         {
             std::ofstream file(path_, std::ios::binary);
             if (!file)

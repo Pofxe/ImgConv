@@ -2,6 +2,8 @@
 
 namespace img_lib
 {
+    Image::Image(int w_, int h_) : width(w_), height(h_), step(w_), pixels(w_ * h_) {}
+
     Image::Image(int w_, int h_, Color fill_) : width(w_), height(h_), step(w_), pixels(w_* h_, fill_) {}
 
     Image::Image(const Image& other_) : width(other_.width), height(other_.height), step(other_.step), pixels(other_.pixels) {}
@@ -104,71 +106,43 @@ namespace img_lib
         return reinterpret_cast<const uint8_t*>(pixels.data());
     }
 
-    Image Image::ResizeImage(int newWidth_, int newHeight_) const 
+    Image Image::ResizeImage(int new_width_, int new_height_) const 
     {
-        Image newImage(newWidth_, newHeight_);
+        Image resizedImage(new_width_, new_height_);
 
-        for (int y = 0; y < newHeight_; ++y) 
+        int oldWidth = GetWidth();
+        int oldHeight = GetHeight();
+
+        for (int i = 0; i < new_height_; ++i)
         {
-            for (int x = 0; x < newWidth_; ++x) 
+            for (int j = 0; j < new_width_; ++j)
             {
-                float gx = static_cast<float>(x) / newWidth_ * (width - 1);
-                float gy = static_cast<float>(y) / newHeight_ * (height - 1);
+                float x = i * static_cast<float>(oldWidth) / static_cast<float>(new_width_);
+                float y = j * static_cast<float>(oldWidth) / static_cast<float>(new_width_);
 
-                Color interpolatedColor = LanczosInterpolation(gx, gy);
-                newImage.SetPixel(x, y, interpolatedColor); // !!! out_of_range !!!
+                int x1 = static_cast<int>(x);
+                int y1 = static_cast<int>(y);
+                int x2 = std::min(x1 + 1, oldWidth - 1);
+                int y2 = std::min(y1 + 1, oldHeight - 1);
+
+                float dx = x - x1;
+                float dy = y - y1;
+
+                Color p1 = GetPixel(x1, y1);
+                Color p2 = GetPixel(x2, y1);
+                Color p3 = GetPixel(x1, y2);
+                Color p4 = GetPixel(x2, y2);
+
+                Color newColor;
+                newColor.r = static_cast<uint8_t>((1 - dx) * (1 - dy) * p1.r + dx * (1 - dy) * p2.r + (1 - dx) * dy * p3.r + dx * dy * p4.r);
+                newColor.g = static_cast<uint8_t>((1 - dx) * (1 - dy) * p1.g + dx * (1 - dy) * p2.g + (1 - dx) * dy * p3.g + dx * dy * p4.g);
+                newColor.b = static_cast<uint8_t>((1 - dx) * (1 - dy) * p1.b + dx * (1 - dy) * p2.b + (1 - dx) * dy * p3.b + dx * dy * p4.b);
+                newColor.a = static_cast<uint8_t>((1 - dx) * (1 - dy) * p1.a + dx * (1 - dy) * p2.a + (1 - dx) * dy * p3.a + dx * dy * p4.a);
+
+                resizedImage.SetPixel(i, j, newColor);
             }
         }
-        return newImage;
-    }
-
-    Color Image::LanczosInterpolation(float x_, float y_, int a_) const 
-    {
-        int xi = static_cast<int>(x_);
-        int yi = static_cast<int>(y_);
-
-        Color result(0, 0, 0, 0);
-        float totalWeight = 0;
-
-        for (int dy = -a_ + 1; dy <= a_; ++dy) 
-        {
-            for (int dx = -a_ + 1; dx <= a_; ++dx) 
-            {
-                int px = xi + dx;
-                int py = yi + dy;
-
-                if (px >= 0 && px < width && py >= 0 && py < height) 
-                {
-                    Color c = GetPixel(px, py);
-                    float wx = LanczosWeight(x_ - (xi + dx), a_);
-                    float wy = LanczosWeight(y_ - (yi + dy), a_);
-                    float weight = wx * wy;
-
-                    result += c * weight;
-                    totalWeight += weight;
-                }
-            }
-        }
-        if (totalWeight > 0) 
-        {
-            result = result * (1.0f / totalWeight);
-        }
-
-        return result;
-    }
-
-    float Image::LanczosWeight(float t_, int a_) const 
-    {
-        static const int PI = 3.1415926535;
-        if (t_ == 0)
-        {
-            return 1;
-        }
-        if (t_ > -a_ && t_ < a_)
-        {
-            return a_ * sin(PI * t_) * sin(PI * t_ / a_) / (PI * PI * t_ * t_);
-        }
-        return 0;
+        return resizedImage;
     }
 
     void Image::CheckBounds(int x_, int y_) const

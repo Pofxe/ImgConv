@@ -10,8 +10,8 @@ namespace img_lib
 		{
 		public:
 
-			Image LoadImageBMP(const Path& file_);
-			bool SaveImageBMP(const Path& file_, const Image& image_);
+            const Image LoadImageBMP(const Path& file_);
+			bool SaveImageBMP(const Path& file_, const Image& image_) const;
 
 		private:
 

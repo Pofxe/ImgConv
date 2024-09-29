@@ -4,12 +4,12 @@ namespace img_lib
 {
     namespace png_image
     {
-        Image PngImage::LoadImagePNG(const Path& path_)
+        const Image PngImage::LoadImagePNG(const Path& path_)
         {
             return {};
         }
         
-        bool PngImage::SaveImagePNG(const Path& path_, const Image& image_)
+        bool PngImage::SaveImagePNG(const Path& path_, const Image& image_) const
         {
             return false;
         }

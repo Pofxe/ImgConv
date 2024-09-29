@@ -4,7 +4,7 @@ namespace img_lib
 {
     namespace ppm_image
     {
-        Image PpmImage::LoadImagePPM(const Path& path_)
+        const Image PpmImage::LoadImagePPM(const Path& path_)
         {
             std::ifstream file(path_, std::ios::binary);
             if (!file)
@@ -33,7 +33,7 @@ namespace img_lib
             file.close();
         }
 
-        bool PpmImage::SaveImagePPM(const Path& file_, const Image& image_)
+        bool PpmImage::SaveImagePPM(const Path& file_, const Image& image_) const 
         {
             std::string extension = file_.extension().string();
             if (extension == ".p3"s)
@@ -51,7 +51,7 @@ namespace img_lib
             }
         }
 
-        Image PpmImage::LoadP3(const Path& path_)
+        const Image PpmImage::LoadP3(const Path& path_)
         {
             std::ifstream file(path_);
             if (!file)
@@ -92,7 +92,7 @@ namespace img_lib
             return image;
         }
 
-        bool PpmImage::SaveP3(const Path& path_, const Image& image_)
+        bool PpmImage::SaveP3(const Path& path_, const Image& image_) const
         {
             std::ofstream file(path_);
             if (!file)
@@ -123,7 +123,7 @@ namespace img_lib
             return file.good();
         }
 
-        Image PpmImage::LoadP6(const Path& path_)
+        const Image PpmImage::LoadP6(const Path& path_)
         {
             std::ifstream file(path_, std::ios::binary);
             if (!file)
@@ -182,7 +182,7 @@ namespace img_lib
             return image;
         }
 
-        bool PpmImage::SaveP6(const Path& path_, const Image& image_)
+        bool PpmImage::SaveP6(const Path& path_, const Image& image_) const
         {
             std::ofstream file(path_, std::ios::binary);
             if (!file)

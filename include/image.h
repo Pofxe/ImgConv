@@ -17,7 +17,7 @@ namespace img_lib
     struct Color
     {
         Color() = default;
-        Color(uint8_t r_, uint8_t g_, uint8_t b_) : r(r_), g(g_), b(b_) {}
+        Color(uint8_t r_, uint8_t g_, uint8_t b_) : r(r_), g(g_), b(b_), a(255) {}
         Color(uint8_t r_, uint8_t g_, uint8_t b_, uint8_t a_) : r(r_), g(g_), b(b_), a(a_) {}
 
         static Color Black()
@@ -72,7 +72,7 @@ namespace img_lib
     public:
 
         Image() = default;
-        Image(int w_, int h_) : width(w_), height(h_) {}
+        Image(int w_, int h_);
         Image(int w_, int h_, Color fill_);
 
         Image(const Image& other_);
@@ -109,7 +109,7 @@ namespace img_lib
 
         void SetPixel(int x, int y, const Color& pixel);
 
-        Image ResizeImage(int newWidth_, int newHeight_) const;
+        Image ResizeImage(int new_width_, int new_height_) const;
 
     private:
 
@@ -120,9 +120,6 @@ namespace img_lib
         std::vector<Color> pixels;
 
         void CheckBounds(int x_, int y_) const;
-
-        Color LanczosInterpolation(float x_, float y_, int a_ = 2) const;
-        float LanczosWeight(float t_, int a_) const;
     };
 
 }//end namespace img_lib

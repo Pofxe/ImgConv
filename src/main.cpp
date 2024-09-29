@@ -185,6 +185,4 @@ int main(int argc_, const char** argv_)
     }
 
     cout << "Image successfully converted from "s << input_file.string() << " to "s << output_file.string() << endl;
-
-    return 0;
 }

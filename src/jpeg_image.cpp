@@ -35,7 +35,7 @@ namespace img_lib
             }
         }
 
-        Image JpegImage::LoadImageJPEG(const Path& path_)
+        const Image JpegImage::LoadImageJPEG(const Path& path_)
         {
             jpeg_decompress_struct cinfo;
             my_error_mgr jerr;
@@ -48,7 +48,7 @@ namespace img_lib
             if ((file = _wfopen(path_.wstring().c_str(), L"rb")) == NULL)
             {
             #else
-            if ((infile = fopen(path_.string().c_str(), "rb")) == NULL) 
+            if ((file = fopen(path_.string().c_str(), "rb")) == NULL) 
             {
             #endif
                 return {};
@@ -92,7 +92,7 @@ namespace img_lib
             return image;
         }
 
-        bool JpegImage::SaveImageJPEG(const Path& path_, const Image& image_)
+        bool JpegImage::SaveImageJPEG(const Path& path_, const Image& image_) const
         {
             jpeg_compress_struct cinfo;
             jpeg_error_mgr jerr;
@@ -107,7 +107,7 @@ namespace img_lib
             if ((file = _wfopen(path_.wstring().c_str(), L"wb")) == NULL) 
             {
             #else
-            if ((outfile = fopen(path_.string().c_str(), "wb")) == NULL) 
+            if ((file = fopen(path_.string().c_str(), "wb")) == NULL) 
             {
             #endif
                 return false;

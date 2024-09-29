@@ -15,8 +15,8 @@ namespace img_lib
         {
         public:
 
-            Image LoadImageJPEG(const Path& path_);
-            bool SaveImageJPEG(const Path& path_, const Image& image_);
+            const Image LoadImageJPEG(const Path& path_);
+            bool SaveImageJPEG(const Path& path_, const Image& image_) const;
         };
 
     } // end namespace jpeg_image

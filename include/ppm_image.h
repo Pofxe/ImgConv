@@ -14,16 +14,16 @@ namespace img_lib
 		{
 		public:
 
-			Image LoadImagePPM(const Path& file_);
-			bool SaveImagePPM(const Path& file_, const Image& image_);
+			const Image LoadImagePPM(const Path& file_);
+			bool SaveImagePPM(const Path& file_, const Image& image_) const;
 
 		private:
 
-			Image LoadP3(const Path& file_);
-			Image LoadP6(const Path& file_);
+			const Image LoadP3(const Path& file_);
+			const Image LoadP6(const Path& file_);
 
-			bool SaveP3(const Path& file_, const Image& image_);
-			bool SaveP6(const Path& file_, const Image& image_);
+			bool SaveP3(const Path& file_, const Image& image_) const;
+			bool SaveP6(const Path& file_, const Image& image_) const;
 		};
 
 	} // end namespace ppm_image
