@@ -106,27 +106,27 @@ namespace img_lib
         return reinterpret_cast<const uint8_t*>(pixels.data());
     }
 
-    Image Image::ResizeImage(int new_width_, int new_height_) const 
+    Image Image::ResizeImage(int new_width_, int new_height_) const
     {
         Image resizedImage(new_width_, new_height_);
 
         int oldWidth = GetWidth();
         int oldHeight = GetHeight();
 
-        for (int i = 0; i < new_height_; ++i)
+        for (int y = 0; y < new_height_; ++y)
         {
-            for (int j = 0; j < new_width_; ++j)
+            for (int x = 0; x < new_width_; ++x)
             {
-                float x = i * static_cast<float>(oldWidth) / static_cast<float>(new_width_);
-                float y = j * static_cast<float>(oldWidth) / static_cast<float>(new_width_);
+                float srcX = x * static_cast<float>(oldWidth) / static_cast<float>(new_width_);
+                float srcY = y * static_cast<float>(oldHeight) / static_cast<float>(new_height_);
 
-                int x1 = static_cast<int>(x);
-                int y1 = static_cast<int>(y);
+                int x1 = static_cast<int>(srcX);
+                int y1 = static_cast<int>(srcY);
                 int x2 = std::min(x1 + 1, oldWidth - 1);
                 int y2 = std::min(y1 + 1, oldHeight - 1);
 
-                float dx = x - x1;
-                float dy = y - y1;
+                float dx = srcX - x1;
+                float dy = srcY - y1;
 
                 Color p1 = GetPixel(x1, y1);
                 Color p2 = GetPixel(x2, y1);
@@ -139,7 +139,7 @@ namespace img_lib
                 newColor.b = static_cast<uint8_t>((1 - dx) * (1 - dy) * p1.b + dx * (1 - dy) * p2.b + (1 - dx) * dy * p3.b + dx * dy * p4.b);
                 newColor.a = static_cast<uint8_t>((1 - dx) * (1 - dy) * p1.a + dx * (1 - dy) * p2.a + (1 - dx) * dy * p3.a + dx * dy * p4.a);
 
-                resizedImage.SetPixel(i, j, newColor);
+                resizedImage.SetPixel(x, y, newColor);
             }
         }
         return resizedImage;

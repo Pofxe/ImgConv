@@ -6,7 +6,7 @@ namespace img_lib
 {
     namespace ico_image
     {
-        const Image IcoImage::LoadImageICO(const Path& path_) // the image is not loading correctly
+        const Image IcoImage::LoadImageICO(const Path& path_)
         {
             std::ifstream file(path_, std::ios::binary);
             if (!file)
@@ -34,18 +34,32 @@ namespace img_lib
                 return {};
             }
 
-            IconDirEntry entry{};
-            file.read(reinterpret_cast<char*>(&entry), sizeof(IconDirEntry));
+            std::vector<IconDirEntry> entries(header.count);
+            file.read(reinterpret_cast<char*>(entries.data()), header.count * sizeof(IconDirEntry));
             if (!file)
             {
                 return {};
             }
 
-            int width = entry.width == 0 ? 256 : entry.width;
-            int height = entry.height == 0 ? 256 : entry.height;
-            uint32_t bit_count = entry.bit_count;
+            IconDirEntry* largestEntry = &entries[0];
+            for (auto& entry : entries)
+            {
+                int width = entry.width == 0 ? 256 : entry.width;
+                int height = entry.height == 0 ? 256 : entry.height;
+                int largestWidth = largestEntry->width == 0 ? 256 : largestEntry->width;
+                int largestHeight = largestEntry->height == 0 ? 256 : largestEntry->height;
 
-            file.seekg(entry.offset, std::ios::beg);
+                if (width * height > largestWidth * largestHeight)
+                {
+                    largestEntry = &entry;
+                }
+            }
+
+            int width = largestEntry->width == 0 ? 256 : largestEntry->width;
+            int height = largestEntry->height == 0 ? 256 : largestEntry->height;
+            uint32_t bit_count = largestEntry->bit_count;
+
+            file.seekg(largestEntry->offset, std::ios::beg);
 
             BmpHeader bmpHeader{};
             file.read(reinterpret_cast<char*>(&bmpHeader), sizeof(BmpHeader));
@@ -62,7 +76,7 @@ namespace img_lib
 
             Image image(width, height, Color::Black());
 
-            if (bit_count == 32) // it works not correctly
+            if (bit_count == 32)
             {
                 for (int y = height - 1; y >= 0; --y)
                 {
@@ -119,10 +133,10 @@ namespace img_lib
             }
 
             file.close();
-            return image.ResizeImage(360, 360);
+            return image;
         }
 
-        bool IcoImage::SaveImageICO(const Path& path_, const Image& image_) const // it works correctly for a single image & large file weight (will decrease when there is a function ResizeImage)
+        bool IcoImage::SaveImageICO(const Path& path_, const Image& image_) const
         {
             std::ofstream file(path_, std::ios::binary);
             if (!file)
@@ -131,70 +145,88 @@ namespace img_lib
                 return false;
             }
 
-            IcoHeader header = { 0, 1, 1 };
+            std::vector<std::pair<int, int>> sizes = { {16, 16}, {24, 24}, { 32, 32 }, {48, 48}, { 64, 64 }, {96, 96}, { 128, 128 }, {256, 256} };
+            uint16_t num_images = static_cast<uint16_t>(sizes.size());
+
+            IcoHeader header = { 0, 1, num_images };
             file.write(reinterpret_cast<const char*>(&header), sizeof(IcoHeader));
             if (!file)
             {
                 return false;
             }
 
-            int width = image_.GetWidth();
-            int height = image_.GetHeight();
+            uint32_t offset = static_cast<uint32_t>(sizeof(IcoHeader) + (num_images * sizeof(IconDirEntry)));
 
-            IconDirEntry entry{};
-            entry.width = static_cast<uint8_t>(width > 256 ? 0 : width);
-            entry.height = static_cast<uint8_t>(height > 256 ? 0 : height);
-            entry.color_count = 0;
-            entry.reserved = 0;
-            entry.planes = 1;
-            entry.bit_count = 32;
-            entry.size = static_cast<uint32_t>(sizeof(BmpHeader) + (width * height * 4));
-            entry.offset = static_cast<uint32_t>(sizeof(IcoHeader) + sizeof(IconDirEntry));
-
-            file.write(reinterpret_cast<const char*>(&entry), sizeof(IconDirEntry));
-            if (!file)
+            for (const auto& size : sizes)
             {
-                return false;
-            }
+                int width = size.first;
+                int height = size.second;
 
-            BmpHeader bmpHeader{};
-            bmpHeader.biSize = sizeof(BmpHeader);
-            bmpHeader.biWidth = width;
-            bmpHeader.biHeight = height * 2;
-            bmpHeader.biPlanes = 1;
-            bmpHeader.biBitCount = 32;
-            bmpHeader.biCompression = 0;
-            bmpHeader.biSizeImage = static_cast<uint32_t>(width * height * 4);
-            bmpHeader.biXPelsPerMeter = 0;
-            bmpHeader.biYPelsPerMeter = 0;
-            bmpHeader.biClrUsed = 0;
-            bmpHeader.biClrImportant = 0;
+                IconDirEntry entry{};
+                entry.width = static_cast<uint8_t>(width > 256 ? 0 : width);
+                entry.height = static_cast<uint8_t>(height > 256 ? 0 : height);
+                entry.color_count = 0;
+                entry.reserved = 0;
+                entry.planes = 1;
+                entry.bit_count = 32;
+                entry.size = static_cast<uint32_t>(sizeof(BmpHeader) + (width * height * 4));
+                entry.offset = offset;
 
-            file.write(reinterpret_cast<const char*>(&bmpHeader), sizeof(BmpHeader));
-            if (!file)
-            {
-                return false;
-            }
-
-            for (int y = height - 1; y >= 0; --y)
-            {
-                for (int x = 0; x < width; ++x)
+                file.write(reinterpret_cast<const char*>(&entry), sizeof(IconDirEntry));
+                if (!file)
                 {
-                    Color pixel = image_.GetPixel(x, y);
+                    return false;
+                }
 
-                    uint8_t r = pixel.r;
-                    uint8_t g = pixel.g;
-                    uint8_t b = pixel.b;
-                    uint8_t a = pixel.a;
+                offset += entry.size;
+            }
 
-                    file.write(reinterpret_cast<const char*>(&b), sizeof(uint8_t));
-                    file.write(reinterpret_cast<const char*>(&g), sizeof(uint8_t));
-                    file.write(reinterpret_cast<const char*>(&r), sizeof(uint8_t));
-                    file.write(reinterpret_cast<const char*>(&a), sizeof(uint8_t));
+            for (const auto& size : sizes)
+            {
+                int width = size.first;
+                int height = size.second;
 
-                    if (!file)
+                Image resized_image = image_.ResizeImage(width, height);
+
+                BmpHeader bmpHeader{};
+                bmpHeader.biSize = sizeof(BmpHeader);
+                bmpHeader.biWidth = width;
+                bmpHeader.biHeight = height * 2;
+                bmpHeader.biPlanes = 1;
+                bmpHeader.biBitCount = 32;
+                bmpHeader.biCompression = 0;
+                bmpHeader.biSizeImage = static_cast<uint32_t>(width * height * 4);
+                bmpHeader.biXPelsPerMeter = 0;
+                bmpHeader.biYPelsPerMeter = 0;
+                bmpHeader.biClrUsed = 0;
+                bmpHeader.biClrImportant = 0;
+
+                file.write(reinterpret_cast<const char*>(&bmpHeader), sizeof(BmpHeader));
+                if (!file)
+                {
+                    return false;
+                }
+
+                for (int y = height - 1; y >= 0; --y)
+                {
+                    for (int x = 0; x < width; ++x)
                     {
-                        return false;
+                        Color pixel = resized_image.GetPixel(x, y);
+
+                        uint8_t r = pixel.r;
+                        uint8_t g = pixel.g;
+                        uint8_t b = pixel.b;
+                        uint8_t a = pixel.a;
+
+                        file.write(reinterpret_cast<const char*>(&b), sizeof(uint8_t));
+                        file.write(reinterpret_cast<const char*>(&g), sizeof(uint8_t));
+                        file.write(reinterpret_cast<const char*>(&r), sizeof(uint8_t));
+                        file.write(reinterpret_cast<const char*>(&a), sizeof(uint8_t));
+
+                        if (!file)
+                        {
+                            return false;
+                        }
                     }
                 }
             }
