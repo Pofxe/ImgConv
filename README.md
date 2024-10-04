@@ -10,6 +10,7 @@ Supports:
   
 Planning:
 - .png
+- .gif
 
 ## Install ##
 
