@@ -5,7 +5,7 @@ Supports:
 - .bmp
 - .ppm
 - .p3
-- jpg/jpeg
+- .jpg/.jpeg
 - .ico
   
 Planning:
