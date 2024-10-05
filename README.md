@@ -6,10 +6,11 @@ Supports:
 - .ppm
 - .p3
 - jpg/jpeg
+- .ico
   
 Planning:
-- .ico
 - .png
+- .gif
 
 ## Install ##
 
