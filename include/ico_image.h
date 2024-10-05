@@ -12,7 +12,7 @@ namespace img_lib
 		public:
 
 			const Image LoadImageICO(const Path& path_);
-			bool SaveImageICO(const Path& path, const Image& image_) const;
+			bool SaveImageICO(const Path& path_, const Image& image_) const;
 
 		private:
 

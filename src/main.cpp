@@ -7,6 +7,7 @@
 #include "tiff_image.h"
 #include "png_image.h"
 #include "jpeg_image.h"
+#include "gif_image.h"
 
 #include "image.h"
 
@@ -15,7 +16,7 @@ using namespace std;
 using img_lib::Image;
 using img_lib::Path;
 
-enum class Format { PPM, BMP, TIFF, PNG, JPEG, ICO, UNKNOWN };
+enum class Format { PPM, BMP, TIFF, PNG, JPEG, ICO, GIF, UNKNOWN };
 
 Format GetFormatByExtension(const Path& input_file_)
 {
@@ -51,6 +52,11 @@ Format GetFormatByExtension(const Path& input_file_)
         return Format::ICO;
     }
 
+    if (ext == ".gif"s)
+    {
+        return Format::GIF;
+    }
+
     return Format::UNKNOWN;
 }
 
@@ -62,6 +68,7 @@ Image LoadImage(const Path& input_file_, Format format_)
     img_lib::png_image::PngImage png_image;
     img_lib::jpeg_image::JpegImage jpeg_image;
     img_lib::ico_image::IcoImage ico_image;
+    img_lib::gif_image::GifImage gif_image;
 
     switch (format_) 
     {
@@ -83,6 +90,9 @@ Image LoadImage(const Path& input_file_, Format format_)
     case Format::ICO:
         return ico_image.LoadImageICO(input_file_);
 
+    case Format::GIF:
+        return gif_image.LoadImageGIF(input_file_);
+
     default:
         throw std::runtime_error("Unsupported input file format"s);
     }
@@ -96,6 +106,7 @@ void SaveImage(const Path& output_file_, const Image& image_, Format format_)
     img_lib::png_image::PngImage png_image;
     img_lib::jpeg_image::JpegImage jpeg_image;
     img_lib::ico_image::IcoImage ico_image;
+    img_lib::gif_image::GifImage gif_image;
 
     switch (format_) 
     {
@@ -121,6 +132,10 @@ void SaveImage(const Path& output_file_, const Image& image_, Format format_)
     
     case Format::ICO:
         ico_image.SaveImageICO(output_file_, image_);
+        break;
+
+    case Format::GIF:
+        gif_image.SaveImageGIF(output_file_, image_);
         break;
 
     default:
