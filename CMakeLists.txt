@@ -6,14 +6,14 @@ set(CMAKE_CXX_STANDARD 17)
 if(UNIX)
 	set(LIBPNG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libpng/lib/libpng.a)
 	set(LIBJPEG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/lib/libjpeg.a)
-	set(GIFLIB_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/giflib/lib/gif.a)
+	set(GIFLIB_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/giflib/lib/libgif.a)
 	set(LIBPNG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libpng/include)
 	set(LIBJPEG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/include)
 	set(GIFLIB_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/giflib/include)
 elseif(WIN32)
 	set(LIBPNG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libpng/lib/libpng16.lib)
 	set(LIBJPEG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/lib/jpeg.lib)
-	set(GIFLIB_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/giflib/lib/gif.lib)
+	set(GIFLIB_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/giflib/lib/giflib.lib)
 	set(LIBPNG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libpng/include)
 	set(LIBJPEG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/include)
 	set(GIFLIB_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/giflib/include)
@@ -30,6 +30,7 @@ set(SOURCES
     src/bmp_image.cpp
     src/png_image.cpp
     src/jpeg_image.cpp
+    src/gif_image.cpp
 )
 
 set(HEADERS
@@ -40,6 +41,7 @@ set(HEADERS
     include/bmp_image.h
     include/png_image.h
     include/jpeg_image.h
+    include/gif_image.h
     include/pack_defines.h
 )
 

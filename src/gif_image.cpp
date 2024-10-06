@@ -13,26 +13,5 @@ namespace img_lib
 		{
 			return false;
 		}
-
-		const Image GifImage::LoadStatic(const Path& path_)
-		{
-			return {};
-		}
-
-		bool GifImage::SaveStatic(const Path& path_, const Image& image_) const
-		{
-			return false;
-		}
-
-		const Image GifImage::LoadDinamic(const Path& path_)
-		{	
-			return {};
-		}	
-		
-		bool GifImage::SaveDinamic(const Path& path_, const Image& image_) const
-		{
-			return false;
-		}
-
-	} // end namespace gif_image
-}// end namespace img_lib
+	}
+}
