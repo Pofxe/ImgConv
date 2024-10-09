@@ -1,7 +1,5 @@
 #include "png_image.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdexcept>
+
 #include <setjmp.h>
 
 namespace img_lib

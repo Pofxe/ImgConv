@@ -1,5 +1,4 @@
 #include <iostream>
-#include <stdexcept>
 
 #include "ppm_image.h"
 #include "bmp_image.h"

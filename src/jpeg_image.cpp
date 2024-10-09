@@ -1,9 +1,6 @@
 #include "jpeg_image.h"
 
-#include <stdexcept>
-#include <cstdio>
 #include <setjmp.h>
-#include <stdio.h>
 
 namespace img_lib
 {

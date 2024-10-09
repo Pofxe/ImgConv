@@ -2,7 +2,6 @@
 
 #include "image.h"
 
-
 namespace img_lib 
 {
     namespace tiff_image

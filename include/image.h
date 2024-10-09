@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <filesystem>
 #include <fstream>
+#include <stdlib.h>
+#include <stdio.h>
 
 namespace img_lib
 {

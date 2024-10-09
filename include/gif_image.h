@@ -2,7 +2,10 @@
 
 #include "image.h"
 
-#include <gif_lib.h>
+extern "C"
+{
+	#include <gif_lib.h>
+}
 
 namespace img_lib
 {
