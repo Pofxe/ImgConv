@@ -30,6 +30,7 @@ cmake --build .
 
 - [libpng](https://github.com/pnggroup/libpng.git)
 - [libjpeg](https://github.com/winlibs/libjpeg.git)
+- [giflib](https://giflib.sourceforge.net/)
 
 ## Usage ##
 
