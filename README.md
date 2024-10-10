@@ -7,10 +7,10 @@ Supports:
 - .p3
 - .jpg/.jpeg
 - .ico
+- .gif (static/grayscale)
   
 Planning:
 - .png
-- .gif (static image)
 
 ## Install ##
 
