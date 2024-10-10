@@ -11,6 +11,8 @@ Supports:
   
 Planning:
 - .png
+- modification.gif
+- .svg
 
 ## Install ##
 
