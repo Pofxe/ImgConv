@@ -55,49 +55,49 @@ namespace img_lib
         return pixels[y_ * step + x_];
     }
 
-    void Image::SetPixel(int x_, int y_, const Color& pixel_)
+    void Image::SetPixel(int x_, int y_, const Color& pixel_) 
     {
         pixels[y_ * width + x_] = pixel_;
     }
 
-    std::vector<Color>& Image::GetPixels()
+    std::vector<Color>& Image::GetPixels() noexcept
+    {
+        return pixels;
+    }
+     
+    const std::vector<Color>& Image::GetPixels() const noexcept
     {
         return pixels;
     }
 
-    const std::vector<Color>& Image::GetPixels() const
-    {
-        return pixels;
-    }
-
-    Color* Image::GetLine(int y_)
+    Color* Image::GetLine(int y_) noexcept
     {
         CheckBounds(0, y_);
         return &pixels[y_ * step];
     }
 
-    const Color* Image::GetLine(int y_) const
+    const Color* Image::GetLine(int y_) const noexcept
     {
         CheckBounds(0, y_);
         return &pixels[y_ * step];
     }
 
-    int Image::GetWidth() const
+    int Image::GetWidth() const noexcept
     {
         return width;
     }
 
-    int Image::GetHeight() const
+    int Image::GetHeight() const noexcept
     {
         return height;
     }
 
-    int Image::GetStep() const
+    int Image::GetStep() const noexcept
     {
         return step;
     }
 
-    const uint8_t* Image::GetData() const
+    const uint8_t* Image::GetData() const noexcept
     {
         if (pixels.empty())
         {

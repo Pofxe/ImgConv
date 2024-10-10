@@ -37,7 +37,7 @@ namespace img_lib
         uint8_t b;
         uint8_t a;
 
-        Color operator*(float scalar_) const
+        Color operator*(float scalar_) const noexcept
         {
             return
             {
@@ -48,7 +48,7 @@ namespace img_lib
             };
         }
 
-        Color operator+(const Color& other_) const
+        Color operator+(const Color& other_) const noexcept
         {
             return
             {
@@ -59,13 +59,18 @@ namespace img_lib
             };
         }
 
-        Color& operator+=(const Color& other_) 
+        Color& operator+=(const Color& other_) noexcept
         {
             r += other_.r;
             g += other_.g;
             b += other_.b;
             a += other_.a;
             return *this;
+        }
+
+        bool operator==(const Color& other) const 
+        {
+            return r == other.r && g == other.g && b == other.b && a == other.a;
         }
     };
 
@@ -74,7 +79,7 @@ namespace img_lib
     public:
 
         Image() = default;
-        Image(int w_, int h_);
+        explicit Image(int w_, int h_);
         Image(int w_, int h_, Color fill_);
 
         Image(const Image& other_);
@@ -83,12 +88,12 @@ namespace img_lib
         Image(Image&& other_) noexcept;
         Image& operator=(Image&& other_) noexcept;
 
-        explicit operator bool() const
+        explicit operator bool() const noexcept
         {
             return GetWidth() > 0 && GetHeight() > 0;
         }
 
-        bool operator!() const
+        bool operator!() const noexcept
         {
             return !operator bool();
         }
@@ -96,20 +101,20 @@ namespace img_lib
         const Color& GetPixel(int x_, int y_) const;
         Color& GetPixel(int x_, int y_);
 
-        std::vector<Color>& GetPixels();
-        const std::vector<Color>& GetPixels() const;
+        std::vector<Color>& GetPixels() noexcept;
+        const std::vector<Color>& GetPixels() const noexcept;
 
-        Color* GetLine(int y_);
-        const Color* GetLine(int y_) const;
+        Color* GetLine(int y_) noexcept;
+        const Color* GetLine(int y_) const noexcept;
 
-        int GetWidth() const;
-        int GetHeight() const;
+        int GetWidth() const noexcept;
+        int GetHeight() const noexcept;
 
-        int GetStep() const;
+        int GetStep() const noexcept;
 
-        const uint8_t* GetData() const;
+        const uint8_t* GetData() const noexcept;
 
-        void SetPixel(int x, int y, const Color& pixel);
+        void SetPixel(int x_, int y_, const Color& pixel_);
 
         Image ResizeImage(int new_width_, int new_height_) const;
 
