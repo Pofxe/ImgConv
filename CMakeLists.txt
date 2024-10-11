@@ -31,6 +31,7 @@ set(SOURCES
     src/png_image.cpp
     src/jpeg_image.cpp
     src/gif_image.cpp
+    src/svg_image.cpp
 )
 
 set(HEADERS
@@ -42,6 +43,7 @@ set(HEADERS
     include/png_image.h
     include/jpeg_image.h
     include/gif_image.h
+    include/svg_image.h
     include/pack_defines.h
 )
 

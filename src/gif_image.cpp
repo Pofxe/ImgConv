@@ -1,10 +1,5 @@
 #include "gif_image.h"
 
-#include <unordered_map>
-#include <queue>
-#include <algorithm>
-#include <random>
-
 namespace img_lib
 {
 	namespace gif_image
@@ -14,20 +9,20 @@ namespace img_lib
             GifFileType* gif_file = DGifOpenFileName(path_.string().c_str(), nullptr);
             if (!gif_file)
             {
-                throw std::runtime_error("Failed to open GIF file: " + path_.string());
+                throw std::runtime_error("Failed to open GIF file: "s + path_.string());
             }
 
             int error_code = DGifSlurp(gif_file);
             if (error_code != GIF_OK)
             {
                 DGifCloseFile(gif_file, nullptr);
-                throw std::runtime_error("Failed to read GIF file: " + path_.string());
+                throw std::runtime_error("Failed to read GIF file: "s + path_.string());
             }
 
             if (gif_file->ImageCount != 1)
             {
                 DGifCloseFile(gif_file, nullptr);
-                throw std::runtime_error("GIF file is not static: " + path_.string());
+                throw std::runtime_error("GIF file is not static: "s + path_.string());
             }
 
             SavedImage* frame = &gif_file->SavedImages[0];
@@ -62,7 +57,7 @@ namespace img_lib
             GifFileType* gif_file = EGifOpenFileName(path_.string().c_str(), false, nullptr);
             if (!gif_file)
             {
-                throw std::runtime_error("Failed to create GIF file: " + path_.string());
+                throw std::runtime_error("Failed to create GIF file: "s + path_.string());
             }
 
             EGifSetGifVersion(gif_file, true);
@@ -71,7 +66,7 @@ namespace img_lib
             if (!color_map)
             {
                 EGifCloseFile(gif_file, nullptr);
-                throw std::runtime_error("Failed to create color map for GIF file: " + path_.string());
+                throw std::runtime_error("Failed to create color map for GIF file: "s + path_.string());
             }
 
             for (int i = 0; i < 256; ++i)
@@ -89,14 +84,14 @@ namespace img_lib
             {
                 GifFreeMapObject(color_map);
                 EGifCloseFile(gif_file, nullptr);
-                throw std::runtime_error("Failed to set screen description for GIF file: " + path_.string());
+                throw std::runtime_error("Failed to set screen description for GIF file: "s + path_.string());
             }
 
             if (EGifPutImageDesc(gif_file, 0, 0, width, height, false, nullptr) == GIF_ERROR)
             {
                 GifFreeMapObject(color_map);
                 EGifCloseFile(gif_file, nullptr);
-                throw std::runtime_error("Failed to set image description for GIF file: " + path_.string());
+                throw std::runtime_error("Failed to set image description for GIF file: "s + path_.string());
             }
 
             for (int y = 0; y < height; ++y)
@@ -109,7 +104,7 @@ namespace img_lib
                     {
                         GifFreeMapObject(color_map);
                         EGifCloseFile(gif_file, nullptr);
-                        throw std::runtime_error("Failed to write pixel to GIF file: " + path_.string());
+                        throw std::runtime_error("Failed to write pixel to GIF file: "s + path_.string());
                     }
                 }
             }
@@ -117,7 +112,7 @@ namespace img_lib
             GifFreeMapObject(color_map);
             if (EGifCloseFile(gif_file, nullptr) == GIF_ERROR)
             {
-                throw std::runtime_error("Failed to close GIF file: " + path_.string());
+                throw std::runtime_error("Failed to close GIF file: "s + path_.string());
             }
 
             return true;

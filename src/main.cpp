@@ -7,6 +7,7 @@
 #include "png_image.h"
 #include "jpeg_image.h"
 #include "gif_image.h"
+#include "svg_image.h"
 
 #include "image.h"
 
@@ -15,7 +16,7 @@ using namespace std;
 using img_lib::Image;
 using img_lib::Path;
 
-enum class Format { PPM, BMP, TIFF, PNG, JPEG, ICO, GIF, UNKNOWN };
+enum class Format { PPM, BMP, TIFF, PNG, JPEG, ICO, GIF, SVG, UNKNOWN };
 
 Format GetFormatByExtension(const Path& input_file_)
 {
@@ -54,6 +55,11 @@ Format GetFormatByExtension(const Path& input_file_)
     if (ext == ".gif"s)
     {
         return Format::GIF;
+    }
+
+    if (ext == ".svg"s)
+    {
+        return Format::SVG;
     }
 
     return Format::UNKNOWN;
