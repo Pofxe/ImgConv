@@ -5,13 +5,13 @@ Supports:
 - .bmp
 - .ppm
 - .p3
-- .jpg/.jpeg
+- .jpg / .jpeg
 - .ico
 - .gif (static/grayscale)
   
 Planning:
 - .png
-- modification.gif
+- modification .gif
 - .svg
 
 ## Install ##
@@ -33,6 +33,7 @@ cmake --build .
 - [libpng](https://github.com/pnggroup/libpng.git)
 - [libjpeg](https://github.com/winlibs/libjpeg.git)
 - [giflib](https://giflib.sourceforge.net/)
+- [pugixml](https://github.com/zeux/pugixml?ysclid=m2f27nmbfq386453461)
 
 ## Usage ##
 
