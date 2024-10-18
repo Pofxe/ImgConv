@@ -1,7 +1,5 @@
 #include "image.h"
 
-#include <sstream>
-
 namespace img_lib
 {
 	namespace svg_image

@@ -74,6 +74,7 @@ Image LoadImage(const Path& input_file_, Format format_)
     img_lib::jpeg_image::JpegImage jpeg_image;
     img_lib::ico_image::IcoImage ico_image;
     img_lib::gif_image::GifImage gif_image;
+    img_lib::svg_image::SvgImage svg_image;
 
     switch (format_) 
     {
@@ -97,6 +98,9 @@ Image LoadImage(const Path& input_file_, Format format_)
 
     case Format::GIF:
         return gif_image.LoadImageGIF(input_file_);
+
+    case Format::SVG:
+        return svg_image.LoadImageSVG(input_file_);
 
     default:
         throw std::runtime_error("Unsupported input file format"s);
