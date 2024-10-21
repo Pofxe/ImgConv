@@ -1,8 +1,10 @@
 #include "svg_image.h"
 #include "pugixml.hpp"
+#include "color_map.h"
 
 #include <regex>
 #include <sstream>
+#include <stack>
 
 namespace img_lib
 {
@@ -15,6 +17,12 @@ namespace img_lib
                 if (color_str_.empty() || color_str_ == "none")
                 {
                     return Color::Black();
+                }
+
+                auto it = ColorMapLookup.find(color_str_);
+                if (it != ColorMapLookup.end())
+                {
+                    return it->second;
                 }
 
                 if (color_str_[0] == '#') // hexadecimal colors
@@ -78,60 +86,6 @@ namespace img_lib
                 image_.SetPixel(cx_ - y_, cy_ - x_, color_);
             }
 
-            void FillPolygon(Image& image_, const std::vector<std::pair<int, int>>& vertices_, const Color& fill_color_)
-            {
-                if (vertices_.empty())
-                {
-                    return;
-                }
-
-                int min_x = vertices_[0].first;
-                int max_x = vertices_[0].first;
-                int min_y = vertices_[0].second;
-                int max_y = vertices_[0].second;
-
-                for (const auto& vertex : vertices_)
-                {
-                    min_x = std::min(min_x, vertex.first);
-                    max_x = std::max(max_x, vertex.first);
-                    min_y = std::min(min_y, vertex.second);
-                    max_y = std::max(max_y, vertex.second);
-                }
-
-                for (int y = min_y; y <= max_y; ++y)
-                {
-                    std::vector<int> intersections;
-
-                    for (size_t i = 0; i < vertices_.size(); ++i)
-                    {
-                        size_t j = (i + 1) % vertices_.size();
-                        int x1 = vertices_[i].first;
-                        int y1 = vertices_[i].second;
-                        int x2 = vertices_[j].first;
-                        int y2 = vertices_[j].second;
-
-                        if ((y1 <= y && y < y2) || (y2 <= y && y < y1))
-                        {
-                            int x = x1 + (y - y1) * (x2 - x1) / (y2 - y1);
-                            intersections.push_back(x);
-                        }
-                    }
-
-                    std::sort(intersections.begin(), intersections.end());
-
-                    for (size_t i = 0; i < intersections.size(); i += 2)
-                    {
-                        int x_start = intersections[i];
-                        int x_end = intersections[i + 1];
-
-                        for (int x = x_start; x <= x_end; ++x)
-                        {
-                            image_.SetPixel(x, y, fill_color_);
-                        }
-                    }
-                }
-            }
-
             void DrawEllipsePixels(Image& image_, int cx_, int cy_, int x_, int y_, const Color& color_)
             {
                 image_.SetPixel(cx_ + x_, cy_ + y_, color_);
@@ -142,6 +96,12 @@ namespace img_lib
 
             void DrawLine(Image& image_, int x1_, int y1_, int x2_, int y2_, const Color& color_)
             {
+                if (x1_ > x2_) 
+                {
+                    std::swap(x1_, x2_);
+                    std::swap(y1_, y2_);
+                }
+
                 int dx = abs(x2_ - x1_);
                 int dy = abs(y2_ - y1_);
                 int sx = (x1_ < x2_) ? 1 : -1;
@@ -183,6 +143,66 @@ namespace img_lib
                     DrawLine(image_, vertices_[i].first, vertices_[i].second, vertices_[i + 1].first, vertices_[i + 1].second, color_);
                 }
             }
+
+            void FillShape(Image& image_, const std::vector<std::pair<int, int>>& points_, const Color& fill_color_)
+            {
+                if (points_.empty())
+                {
+                    return;
+                }
+
+                int min_x = points_[0].first;
+                int max_x = points_[0].first;
+                int min_y = points_[0].second;
+                int max_y = points_[0].second;
+
+                for (const auto& point : points_)
+                {
+                    min_x = std::min(min_x, point.first);
+                    max_x = std::max(max_x, point.first);
+                    min_y = std::min(min_y, point.second);
+                    max_y = std::max(max_y, point.second);
+                }
+
+                for (int y = min_y; y <= max_y; ++y)
+                {
+                    std::vector<int> intersections;
+
+                    for (size_t i = 0; i < points_.size(); ++i)
+                    {
+                        const auto& p1 = points_[i];
+                        const auto& p2 = points_[(i + 1) % points_.size()];
+
+                        if ((p1.second < y && p2.second >= y) || (p2.second < y && p1.second >= y))
+                        {
+                            int x = p1.first + (y - p1.second) * (p2.first - p1.first) / (p2.second - p1.second);
+                            intersections.push_back(x);
+                        }
+                    }
+
+                    std::sort(intersections.begin(), intersections.end());
+
+                    for (size_t i = 0; i < intersections.size(); i += 2)
+                    {
+                        int x1 = intersections[i];
+                        int x2 = intersections[i + 1];
+
+                        for (int x = x1 + 1; x < x2; ++x)
+                        {
+                            if (x >= 0 && x < image_.GetWidth() && y >= 0 && y < image_.GetHeight())
+                            {
+                                image_.SetPixel(x, y, fill_color_);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void DrawBezierCurve(Image& image_, const std::vector<std::pair<int, int>>& control_points_, const Color& color_) 
+            {
+                
+            }
+
         } // end namespace 
 
         void XmlRectLoad(pugi::xml_node child_, Image& image_)
@@ -274,7 +294,7 @@ namespace img_lib
                 vertices.push_back({ x, y });
             }
 
-            FillPolygon(image_, vertices, fill_color);
+            FillShape(image_, vertices, fill_color);
         }
 
         void XmlEllipseLoad(pugi::xml_node child_, Image& image_)
@@ -391,7 +411,99 @@ namespace img_lib
 
         void XmlPathLoad(pugi::xml_node child_, Image& image_)
         {
-            
+            std::string d_str = child_.attribute("d").as_string();
+            std::string stroke_str = child_.attribute("stroke").as_string();
+            std::string fill_str = child_.attribute("fill").as_string();
+            Color stroke_color = ParseColor(stroke_str);
+            Color fill_color = ParseColor(fill_str);
+
+            std::stringstream ss(d_str);
+            std::string command;
+            std::vector<std::pair<int, int>> points;
+            char current_command = '\0';
+            int x = 0;
+            int y = 0;
+
+            while (ss >> command)
+            {
+                if (isalpha(command[0]))
+                {
+                    current_command = command[0];
+                    continue;
+                }
+
+                std::stringstream command_ss(command);
+                std::string x_str, y_str;
+
+                if (current_command == 'M' || current_command == 'L')
+                {
+                    std::getline(command_ss, x_str, ',');
+                    std::getline(command_ss, y_str, ',');
+                    x = std::stoi(x_str);
+                    y = std::stoi(y_str);
+                    points.push_back({ x, y });
+
+                    if (current_command == 'M')
+                    {
+                        current_command = 'L';
+                    }
+                }
+                else if (current_command == 'Z')
+                {
+                    if (!points.empty())
+                    {
+                        DrawLine(image_, points.back().first, points.back().second, points.front().first, points.front().second, stroke_color);
+                    }
+                }
+                else if (current_command == 'C')
+                {
+                    if (points.empty())
+                    {
+                        continue;
+                    }
+
+                    std::vector<std::pair<int, int>> control_points;
+                    for (int i = 0; i < 3; ++i)
+                    {
+                        std::getline(command_ss, x_str, ',');
+                        std::getline(command_ss, y_str, ',');
+                        int cx = std::stoi(x_str);
+                        int cy = std::stoi(y_str);
+                        control_points.push_back({ cx, cy });
+                    }
+                    DrawBezierCurve(image_, control_points, stroke_color);
+                    points.push_back(control_points[2]);
+                }
+                else if (current_command == 'Q')
+                {
+                    if (points.empty())
+                    {
+                        continue;
+                    }
+
+                    std::vector<std::pair<int, int>> control_points;
+                    for (int i = 0; i < 2; ++i)
+                    {
+                        std::getline(command_ss, x_str, ',');
+                        std::getline(command_ss, y_str, ',');
+                        int cx = std::stoi(x_str);
+                        int cy = std::stoi(y_str);
+                        control_points.push_back({ cx, cy });
+                    }
+                    //DrawBezierQuadratic(image_, points.back(), control_points[0], control_points[1], stroke_color);
+                    points.push_back(control_points[1]);
+                }
+            }
+
+            for (size_t i = 1; i < points.size(); ++i)
+            {
+                DrawLine(image_, points[i - 1].first, points[i - 1].second, points[i].first, points[i].second, stroke_color);
+            }
+
+            if (!fill_str.empty() && fill_str != "none"s)
+            {
+                FillShape(image_, points, fill_color);
+            }
         }
 
         void XmlGLoad(pugi::xml_node child_, Image& image_)

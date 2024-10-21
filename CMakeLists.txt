@@ -49,6 +49,7 @@ set(HEADERS
     include/gif_image.h
     include/svg_image.h
     include/pack_defines.h
+    include/color_map.h
 )
 
 add_executable(ImgConv ${SOURCES} ${HEADERS})
