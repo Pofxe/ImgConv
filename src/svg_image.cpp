@@ -16,7 +16,7 @@ namespace img_lib
             {
                 if (color_str_.empty() || color_str_ == "none")
                 {
-                    return Color::Black();
+                    return Color::Transparent();
                 }
 
                 auto it = ColorMapLookup.find(color_str_);
@@ -198,22 +198,87 @@ namespace img_lib
                 }
             }
 
-            void DrawBezierCurve(Image& image_, const std::vector<std::pair<int, int>>& control_points_, const Color& color_) 
+            void DrawBezierCurve(Image& image_, const std::vector<std::pair<int, int>>& control_points_, const Color& color_) // set pixels add!!!
             {
-                
+                if (control_points_.size() != 4) 
+                {
+                    return;
+                }
+
+                const int steps = 100;
+
+                int prev_x = control_points_[0].first;
+                int prev_y = control_points_[0].second;
+
+                for (int i = 1; i <= steps; ++i) 
+                {
+                    double t = static_cast<double>(i) / steps;
+
+                    double x = control_points_[0].first * (1 - t) * (1 - t) * (1 - t) +
+                        3 * control_points_[1].first * t * (1 - t) * (1 - t) +
+                        3 * control_points_[2].first * t * t * (1 - t) +
+                        control_points_[3].first * t * t * t;
+
+                    double y = control_points_[0].second * (1 - t) * (1 - t) * (1 - t) +
+                        3 * control_points_[1].second * t * (1 - t) * (1 - t) +
+                        3 * control_points_[2].second * t * t * (1 - t) +
+                        control_points_[3].second * t * t * t;
+
+                    int cur_x = static_cast<int>(std::round(x));
+                    int cur_y = static_cast<int>(std::round(y));
+
+                    DrawLine(image_, prev_x, prev_y, cur_x, cur_y, color_);
+
+                    prev_x = cur_x;
+                    prev_y = cur_y;
+                }
             }
+
+            void DrawBezierQuadratic(Image& image_, const std::vector<std::pair<int, int>>& control_points_, const Color& color_)
+            {
+
+            }
+
+            struct GSettings 
+            {
+                std::string fill;
+                std::string stroke;
+
+                bool use_g_settings = false;
+            };
 
         } // end namespace 
 
-        void XmlRectLoad(pugi::xml_node child_, Image& image_)
+        void XmlRectLoad(pugi::xml_node child_, Image& image_, const GSettings& settings_ = GSettings())
         {
             int x = child_.attribute("x").as_int();
             int y = child_.attribute("y").as_int();
             int rect_width = child_.attribute("width").as_int();
             int rect_height = child_.attribute("height").as_int();
-            std::string fill_str = child_.attribute("fill").as_string();
 
-            Color fill_color = ParseColor(fill_str);
+            Color fill_color;
+            Color stroke_color;
+
+            if (settings_.use_g_settings)
+            {
+                fill_color = ParseColor(settings_.fill.c_str());
+                stroke_color = ParseColor(settings_.stroke.c_str());
+            }
+            else 
+            {
+                std::string fill_str = child_.attribute("fill").as_string();
+                std::string stroke_str = child_.attribute("stroke").as_string();
+                fill_color = ParseColor(fill_str);
+
+                if (stroke_str.empty())
+                {
+                    stroke_color = fill_color;
+                }
+                else
+                {
+                    stroke_color = ParseColor(stroke_str);
+                }
+            }
 
             for (int i = x; i < x + rect_width; ++i)
             {
@@ -222,22 +287,65 @@ namespace img_lib
                     image_.SetPixel(i, j, fill_color);
                 }
             }
+
+            for (int i = x; i < x + rect_width; ++i)
+            {
+                image_.SetPixel(i, y, stroke_color);
+                image_.SetPixel(i, y + rect_height - 1, stroke_color);
+            }
+            for (int j = y; j < y + rect_height; ++j)
+            {
+                image_.SetPixel(x, j, stroke_color);
+                image_.SetPixel(x + rect_width - 1, j, stroke_color);
+            }
         }
 
-        void XmlCircleLoad(pugi::xml_node child_, Image& image_)
+        void XmlCircleLoad(pugi::xml_node child_, Image& image_, const GSettings& settings_ = GSettings())
         {
             int cx = child_.attribute("cx").as_int();
             int cy = child_.attribute("cy").as_int();
             int radius = child_.attribute("r").as_int();
-            std::string fill_str = child_.attribute("fill").as_string();
 
-            Color fill_color = ParseColor(fill_str);
+            Color fill_color;
+            Color stroke_color;
+
+            if (settings_.use_g_settings)
+            {
+                fill_color = ParseColor(settings_.fill.c_str());
+                stroke_color = ParseColor(settings_.stroke.c_str());
+            }
+            else
+            {
+                std::string fill_str = child_.attribute("fill").as_string();
+                std::string stroke_str = child_.attribute("stroke").as_string();
+                fill_color = ParseColor(fill_str);
+
+                if (stroke_str.empty())
+                {
+                    stroke_color = fill_color;
+                }
+                else
+                {
+                    stroke_color = ParseColor(stroke_str);
+                }
+            }
+
+            for (int i = -radius; i <= radius; ++i)
+            {
+                for (int j = -radius; j <= radius; ++j)
+                {
+                    if (i * i + j * j <= radius * radius)
+                    {
+                        image_.SetPixel(cx + i, cy + j, fill_color);
+                    }
+                }
+            }
 
             int x = 0;
             int y = radius;
             int d = 3 - 2 * radius;
 
-            DrawCirclePixels(image_, cx, cy, x, y, fill_color);
+            DrawCirclePixels(image_, cx, cy, x, y, stroke_color);
 
             while (y >= x)
             {
@@ -253,27 +361,37 @@ namespace img_lib
                     d = d + 4 * x + 6;
                 }
 
-                DrawCirclePixels(image_, cx, cy, x, y, fill_color);
-            }
-
-            for (int i = -radius; i <= radius; ++i)
-            {
-                for (int j = -radius; j <= radius; ++j)
-                {
-                    if (i * i + j * j <= radius * radius)
-                    {
-                        image_.SetPixel(cx + i, cy + j, fill_color);
-                    }
-                }
+                DrawCirclePixels(image_, cx, cy, x, y, stroke_color);
             }
         }
 
-        void XmlPolygonLoad(pugi::xml_node child_, Image& image_)
+        void XmlPolygonLoad(pugi::xml_node child_, Image& image_, const GSettings& settings_ = GSettings())
         {
             std::string points_str = child_.attribute("points").as_string();
-            std::string fill_str = child_.attribute("fill").as_string();
 
-            Color fill_color = ParseColor(fill_str);
+            Color fill_color;
+            Color stroke_color;
+
+            if (settings_.use_g_settings) 
+            {
+                fill_color = ParseColor(settings_.fill.c_str());
+                stroke_color = ParseColor(settings_.stroke.c_str());
+            }
+            else 
+            {
+                std::string fill_str = child_.attribute("fill").as_string();
+                std::string stroke_str = child_.attribute("stroke").as_string();
+                fill_color = ParseColor(fill_str);
+
+                if (stroke_str.empty())
+                {
+                    stroke_color = fill_color;
+                }
+                else
+                {
+                    stroke_color = ParseColor(stroke_str);
+                }
+            }
 
             std::vector<std::pair<int, int>> vertices;
             std::stringstream ss(points_str);
@@ -295,17 +413,55 @@ namespace img_lib
             }
 
             FillShape(image_, vertices, fill_color);
+
+            for (size_t i = 1; i < vertices.size(); ++i)
+            {
+                DrawLine(image_, vertices[i - 1].first, vertices[i - 1].second, vertices[i].first, vertices[i].second, stroke_color);
+            }
+            DrawLine(image_, vertices.back().first, vertices.back().second, vertices.front().first, vertices.front().second, stroke_color);
         }
 
-        void XmlEllipseLoad(pugi::xml_node child_, Image& image_)
+        void XmlEllipseLoad(pugi::xml_node child_, Image& image_, const GSettings& settings_ = GSettings())
         {
             int cx = child_.attribute("cx").as_int();
             int cy = child_.attribute("cy").as_int();
             int rx = child_.attribute("rx").as_int();
             int ry = child_.attribute("ry").as_int();
-            std::string fill_str = child_.attribute("fill").as_string();
 
-            Color fill_color = ParseColor(fill_str);
+            Color fill_color;
+            Color stroke_color;
+
+            if (settings_.use_g_settings)
+            {
+                fill_color = ParseColor(settings_.fill.c_str());
+                stroke_color = ParseColor(settings_.stroke.c_str());
+            }
+            else
+            {
+                std::string fill_str = child_.attribute("fill").as_string();
+                std::string stroke_str = child_.attribute("stroke").as_string();
+                fill_color = ParseColor(fill_str);
+
+                if (stroke_str.empty())
+                {
+                    stroke_color = fill_color;
+                }
+                else
+                {
+                    stroke_color = ParseColor(stroke_str);
+                }
+            }
+
+            for (int i = -rx; i <= rx; ++i)
+            {
+                for (int j = -ry; j <= ry; ++j)
+                {
+                    if ((i * i * ry * ry + j * j * rx * rx) <= rx * rx * ry * ry)
+                    {
+                        image_.SetPixel(cx + i, cy + j, fill_color);
+                    }
+                }
+            }
 
             int x = 0;
             int y = ry;
@@ -313,7 +469,7 @@ namespace img_lib
             int dx = 2 * ry * ry * x;
             int dy = 2 * rx * rx * y;
 
-            DrawEllipsePixels(image_, cx, cy, x, y, fill_color);
+            DrawEllipsePixels(image_, cx, cy, x, y, stroke_color);
 
             while (dx < dy)
             {
@@ -331,7 +487,7 @@ namespace img_lib
                     d1 += dx - dy + ry * ry;
                 }
 
-                DrawEllipsePixels(image_, cx, cy, x, y, fill_color);
+                DrawEllipsePixels(image_, cx, cy, x, y, stroke_color);
             }
 
             int d2 = ((ry * ry) * ((x + 0.5) * (x + 0.5))) + ((rx * rx) * ((y - 1) * (y - 1))) - (rx * rx * ry * ry);
@@ -352,27 +508,25 @@ namespace img_lib
                     d2 += dx - dy + rx * rx;
                 }
 
-                DrawEllipsePixels(image_, cx, cy, x, y, fill_color);
-            }
-
-            for (int i = -rx; i <= rx; ++i)
-            {
-                for (int j = -ry; j <= ry; ++j)
-                {
-                    if ((i * i * ry * ry + j * j * rx * rx) <= rx * rx * ry * ry)
-                    {
-                        image_.SetPixel(cx + i, cy + j, fill_color);
-                    }
-                }
+                DrawEllipsePixels(image_, cx, cy, x, y, stroke_color);
             }
         }
 
-        void XmlPolylineLoad(pugi::xml_node child_, Image& image_)
+        void XmlPolylineLoad(pugi::xml_node child_, Image& image_, const GSettings& settings_ = GSettings())
         {
             std::string points_str = child_.attribute("points").as_string();
-            std::string stroke_str = child_.attribute("stroke").as_string();
 
-            Color stroke_color = ParseColor(stroke_str);
+            Color stroke_color;
+
+            if (settings_.use_g_settings) 
+            {
+                stroke_color = ParseColor(settings_.stroke.c_str());
+            }
+            else 
+            {
+                std::string stroke_str = child_.attribute("stroke").as_string();
+                stroke_color = ParseColor(stroke_str);
+            }
 
             std::vector<std::pair<int, int>> vertices;
             std::stringstream ss(points_str);
@@ -396,26 +550,64 @@ namespace img_lib
             DrawPolyline(image_, vertices, stroke_color);
         }
 
-        void XmlLineLoad(pugi::xml_node child_, Image& image_)
+        void XmlLineLoad(pugi::xml_node child_, Image& image_, const GSettings& settings_ = GSettings())
         {
             int x1 = child_.attribute("x1").as_int();
             int y1 = child_.attribute("y1").as_int();
             int x2 = child_.attribute("x2").as_int();
             int y2 = child_.attribute("y2").as_int();
-            std::string stroke_str = child_.attribute("stroke").as_string();
 
-            Color stroke_color = ParseColor(stroke_str);
+            Color stroke_color;
+
+            if (settings_.use_g_settings) 
+            {
+                stroke_color = ParseColor(settings_.stroke.c_str());
+            }
+            else 
+            {
+                std::string stroke_str = child_.attribute("stroke").as_string();
+                stroke_color = ParseColor(stroke_str);
+            }
 
             DrawLine(image_, x1, y1, x2, y2, stroke_color);
         }
 
-        void XmlPathLoad(pugi::xml_node child_, Image& image_)
+        void XmlPathLoad(pugi::xml_node child_, Image& image_, const GSettings& settings_ = GSettings())
         {
             std::string d_str = child_.attribute("d").as_string();
-            std::string stroke_str = child_.attribute("stroke").as_string();
-            std::string fill_str = child_.attribute("fill").as_string();
-            Color stroke_color = ParseColor(stroke_str);
-            Color fill_color = ParseColor(fill_str);
+
+            std::string fill_str = "";
+            Color stroke_color;
+            Color fill_color;
+
+            if (settings_.use_g_settings) 
+            {
+                stroke_color = ParseColor(settings_.stroke.c_str());
+                fill_color = ParseColor(settings_.fill.c_str());
+            }
+            else
+            {
+                std::string stroke_str = child_.attribute("stroke").as_string();
+                fill_str = child_.attribute("fill").as_string();
+                fill_color = ParseColor(fill_str);
+
+                if (stroke_str.empty())
+                {
+                    stroke_color = fill_color;
+                }
+                else
+                {
+                    stroke_color = ParseColor(stroke_str);
+                }
+            }
+
+            for (char& c : d_str)
+            {
+                if (c == ' ')
+                {
+                    c = ',';
+                }
+            }
 
             std::stringstream ss(d_str);
             std::string command;
@@ -455,7 +647,7 @@ namespace img_lib
                         DrawLine(image_, points.back().first, points.back().second, points.front().first, points.front().second, stroke_color);
                     }
                 }
-                else if (current_command == 'C')
+                else if (current_command == 'Q')
                 {
                     if (points.empty())
                     {
@@ -463,7 +655,7 @@ namespace img_lib
                     }
 
                     std::vector<std::pair<int, int>> control_points;
-                    for (int i = 0; i < 3; ++i)
+                    for (int i = 0; i < 4; ++i)
                     {
                         std::getline(command_ss, x_str, ',');
                         std::getline(command_ss, y_str, ',');
@@ -474,7 +666,7 @@ namespace img_lib
                     DrawBezierCurve(image_, control_points, stroke_color);
                     points.push_back(control_points[2]);
                 }
-                else if (current_command == 'Q')
+                /*else if (current_command == 'Q')
                 {
                     if (points.empty())
                     {
@@ -490,9 +682,9 @@ namespace img_lib
                         int cy = std::stoi(y_str);
                         control_points.push_back({ cx, cy });
                     }
-                    //DrawBezierQuadratic(image_, points.back(), control_points[0], control_points[1], stroke_color);
+                    DrawBezierQuadratic(image_, control_points, stroke_color);
                     points.push_back(control_points[1]);
-                }
+                }*/
             }
 
             for (size_t i = 1; i < points.size(); ++i)
@@ -508,7 +700,45 @@ namespace img_lib
 
         void XmlGLoad(pugi::xml_node child_, Image& image_)
         {
+            GSettings settings;
 
+            settings.fill = child_.attribute("fill").as_string();
+            settings.stroke = child_.attribute("stroke").as_string();
+            settings.use_g_settings = true;
+
+            for (pugi::xml_node node : child_.children()) 
+            {
+                std::string node_name = node.name();
+
+                if (node_name == "path")
+                {
+                    XmlPathLoad(node, image_, settings);
+                }
+                else if (node_name == "rect") 
+                {
+                    XmlRectLoad(node, image_, settings);
+                }
+                else if (node_name == "circle") 
+                {
+                    XmlCircleLoad(node, image_, settings);
+                }
+                else if (node_name == "ellipse") 
+                {
+                    XmlEllipseLoad(node, image_, settings);
+                }
+                else if (node_name == "line") 
+                {
+                    XmlLineLoad(node, image_, settings);
+                }
+                else if (node_name == "polyline") 
+                {
+                    XmlPolylineLoad(node, image_, settings);
+                }
+                else if (node_name == "polygon")
+                {
+                    XmlPolygonLoad(node, image_, settings);
+                }
+            }
         }
 
         const Image SvgImage::LoadImageSVG(const Path& path_)

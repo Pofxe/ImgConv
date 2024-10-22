@@ -32,6 +32,11 @@ namespace img_lib
             return { 255, 255, 255, 255 };
         }
 
+        static Color Transparent() 
+        {
+            return Color(255, 255, 255, 0);
+        }
+
         uint8_t r;
         uint8_t g;
         uint8_t b;
