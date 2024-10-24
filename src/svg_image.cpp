@@ -12,6 +12,21 @@ namespace img_lib
     {
         namespace
         {
+            struct Point
+            {
+                float x = 0.0;
+                float y = 0.0;
+            };
+
+            struct GSettings
+            {
+                std::string fill;
+                std::string stroke;
+
+                bool use_g_settings = false;
+            };
+
+
             Color ParseColor(const std::string& color_str_)
             {
                 if (color_str_.empty() || color_str_ == "none")
@@ -96,7 +111,7 @@ namespace img_lib
 
             void DrawLine(Image& image_, int x1_, int y1_, int x2_, int y2_, const Color& color_)
             {
-                if (x1_ > x2_) 
+                if (x1_ > x2_)
                 {
                     std::swap(x1_, x2_);
                     std::swap(y1_, y2_);
@@ -198,54 +213,46 @@ namespace img_lib
                 }
             }
 
-            void DrawBezierCurve(Image& image_, const std::vector<std::pair<int, int>>& control_points_, const Color& color_) // set pixels add!!!
+            void DrawBezierQuadratic(Image& image_, const std::vector<Point>& control_points_, const Color& color_)
             {
-                if (control_points_.size() != 4) 
+                if (control_points_.size() != 3)
                 {
                     return;
                 }
 
-                const int steps = 100;
+                Point p1 = control_points_[0];
+                Point p2 = control_points_[1];
+                Point p3 = control_points_[2];
 
-                int prev_x = control_points_[0].first;
-                int prev_y = control_points_[0].second;
-
-                for (int i = 1; i <= steps; ++i) 
+                for (float t = 0; t <= 1; t += 0.005)
                 {
-                    double t = static_cast<double>(i) / steps;
+                    float x = (1 - t) * (1 - t) * p1.x + 2 * (1 - t) * t * p2.x + t * t * p3.x;
+                    float y = (1 - t) * (1 - t) * p1.y + 2 * (1 - t) * t * p2.y + t * t * p3.y;
 
-                    double x = control_points_[0].first * (1 - t) * (1 - t) * (1 - t) +
-                        3 * control_points_[1].first * t * (1 - t) * (1 - t) +
-                        3 * control_points_[2].first * t * t * (1 - t) +
-                        control_points_[3].first * t * t * t;
-
-                    double y = control_points_[0].second * (1 - t) * (1 - t) * (1 - t) +
-                        3 * control_points_[1].second * t * (1 - t) * (1 - t) +
-                        3 * control_points_[2].second * t * t * (1 - t) +
-                        control_points_[3].second * t * t * t;
-
-                    int cur_x = static_cast<int>(std::round(x));
-                    int cur_y = static_cast<int>(std::round(y));
-
-                    DrawLine(image_, prev_x, prev_y, cur_x, cur_y, color_);
-
-                    prev_x = cur_x;
-                    prev_y = cur_y;
+                    image_.SetPixel(x, y, color_);
                 }
             }
 
-            void DrawBezierQuadratic(Image& image_, const std::vector<std::pair<int, int>>& control_points_, const Color& color_)
+            void DrawBezierCurve(Image& image_, const std::vector<Point>& control_points_, const Color& color_)
             {
+                if (control_points_.size() != 4)
+                {
+                    return;
+                }
 
+                Point p1 = control_points_[0];
+                Point p2 = control_points_[1];
+                Point p3 = control_points_[2];
+                Point p4 = control_points_[3];
+
+                for (float t = 0; t <= 1; t += 0.005)
+                {
+                    float x = (1 - t) * (1 - t) * (1 - t) * p1.x + 3 * (1 - t) * (1 - t) * t * p2.x + 3 * (1 - t) * t * t * p3.x + t * t * t * p4.x;
+                    float y = (1 - t) * (1 - t) * (1 - t) * p1.y + 3 * (1 - t) * (1 - t) * t * p2.y + 3 * (1 - t) * t * t * p3.y + t * t * t * p4.y;
+
+                    image_.SetPixel(x, y, color_);
+                }
             }
-
-            struct GSettings 
-            {
-                std::string fill;
-                std::string stroke;
-
-                bool use_g_settings = false;
-            };
 
         } // end namespace 
 
@@ -264,7 +271,7 @@ namespace img_lib
                 fill_color = ParseColor(settings_.fill.c_str());
                 stroke_color = ParseColor(settings_.stroke.c_str());
             }
-            else 
+            else
             {
                 std::string fill_str = child_.attribute("fill").as_string();
                 std::string stroke_str = child_.attribute("stroke").as_string();
@@ -372,12 +379,12 @@ namespace img_lib
             Color fill_color;
             Color stroke_color;
 
-            if (settings_.use_g_settings) 
+            if (settings_.use_g_settings)
             {
                 fill_color = ParseColor(settings_.fill.c_str());
                 stroke_color = ParseColor(settings_.stroke.c_str());
             }
-            else 
+            else
             {
                 std::string fill_str = child_.attribute("fill").as_string();
                 std::string stroke_str = child_.attribute("stroke").as_string();
@@ -518,11 +525,11 @@ namespace img_lib
 
             Color stroke_color;
 
-            if (settings_.use_g_settings) 
+            if (settings_.use_g_settings)
             {
                 stroke_color = ParseColor(settings_.stroke.c_str());
             }
-            else 
+            else
             {
                 std::string stroke_str = child_.attribute("stroke").as_string();
                 stroke_color = ParseColor(stroke_str);
@@ -559,11 +566,11 @@ namespace img_lib
 
             Color stroke_color;
 
-            if (settings_.use_g_settings) 
+            if (settings_.use_g_settings)
             {
                 stroke_color = ParseColor(settings_.stroke.c_str());
             }
-            else 
+            else
             {
                 std::string stroke_str = child_.attribute("stroke").as_string();
                 stroke_color = ParseColor(stroke_str);
@@ -580,7 +587,7 @@ namespace img_lib
             Color stroke_color;
             Color fill_color;
 
-            if (settings_.use_g_settings) 
+            if (settings_.use_g_settings)
             {
                 stroke_color = ParseColor(settings_.stroke.c_str());
                 fill_color = ParseColor(settings_.fill.c_str());
@@ -601,20 +608,14 @@ namespace img_lib
                 }
             }
 
-            for (char& c : d_str)
-            {
-                if (c == ' ')
-                {
-                    c = ',';
-                }
-            }
-
             std::stringstream ss(d_str);
             std::string command;
-            std::vector<std::pair<int, int>> points;
+            std::vector<Point> points;
+
             char current_command = '\0';
-            int x = 0;
-            int y = 0;
+
+            float x = 0;
+            float y = 0;
 
             while (ss >> command)
             {
@@ -631,8 +632,8 @@ namespace img_lib
                 {
                     std::getline(command_ss, x_str, ',');
                     std::getline(command_ss, y_str, ',');
-                    x = std::stoi(x_str);
-                    y = std::stoi(y_str);
+                    x = std::stof(x_str);
+                    y = std::stof(y_str);
                     points.push_back({ x, y });
 
                     if (current_command == 'M')
@@ -644,7 +645,7 @@ namespace img_lib
                 {
                     if (!points.empty())
                     {
-                        DrawLine(image_, points.back().first, points.back().second, points.front().first, points.front().second, stroke_color);
+                        DrawLine(image_, points.back().x, points.back().y, points.front().x, points.front().y, stroke_color);
                     }
                 }
                 else if (current_command == 'Q')
@@ -654,47 +655,52 @@ namespace img_lib
                         continue;
                     }
 
-                    std::vector<std::pair<int, int>> control_points;
-                    for (int i = 0; i < 4; ++i)
+                    std::vector<Point> control_points;
+                    for (int i = 0; i < 2; ++i)
                     {
                         std::getline(command_ss, x_str, ',');
                         std::getline(command_ss, y_str, ',');
-                        int cx = std::stoi(x_str);
-                        int cy = std::stoi(y_str);
+                        float cx = std::stof(x_str);
+                        float cy = std::stof(y_str);
                         control_points.push_back({ cx, cy });
                     }
-                    DrawBezierCurve(image_, control_points, stroke_color);
-                    points.push_back(control_points[2]);
+                    DrawBezierQuadratic(image_, { points.back(), control_points[0], control_points[1] }, stroke_color);
+                    points.push_back(control_points[1]);
                 }
-                /*else if (current_command == 'Q')
+                else if (current_command == 'C')
                 {
                     if (points.empty())
                     {
                         continue;
                     }
 
-                    std::vector<std::pair<int, int>> control_points;
-                    for (int i = 0; i < 2; ++i)
+                    std::vector<Point> control_points;
+                    for (int i = 0; i < 3; ++i)
                     {
                         std::getline(command_ss, x_str, ',');
                         std::getline(command_ss, y_str, ',');
-                        int cx = std::stoi(x_str);
-                        int cy = std::stoi(y_str);
+                        float cx = std::stof(x_str);
+                        float cy = std::stof(y_str);
                         control_points.push_back({ cx, cy });
                     }
-                    DrawBezierQuadratic(image_, control_points, stroke_color);
-                    points.push_back(control_points[1]);
-                }*/
+                    DrawBezierCurve(image_, { points.back(), control_points[0], control_points[1], control_points[2] }, stroke_color);
+                    points.push_back(control_points[2]);
+                }
             }
 
             for (size_t i = 1; i < points.size(); ++i)
             {
-                DrawLine(image_, points[i - 1].first, points[i - 1].second, points[i].first, points[i].second, stroke_color);
+                DrawLine(image_, points[i - 1].x, points[i - 1].y, points[i].x, points[i].y, stroke_color);
             }
 
             if (!fill_str.empty() && fill_str != "none"s)
             {
-                FillShape(image_, points, fill_color);
+                std::vector<std::pair<int, int>> int_points;
+                for (const auto& point : points)
+                {
+                    int_points.push_back({ static_cast<int>(point.x), static_cast<int>(point.y) });
+                }
+                FillShape(image_, int_points, fill_color);
             }
         }
 
@@ -706,7 +712,7 @@ namespace img_lib
             settings.stroke = child_.attribute("stroke").as_string();
             settings.use_g_settings = true;
 
-            for (pugi::xml_node node : child_.children()) 
+            for (pugi::xml_node node : child_.children())
             {
                 std::string node_name = node.name();
 
@@ -714,23 +720,23 @@ namespace img_lib
                 {
                     XmlPathLoad(node, image_, settings);
                 }
-                else if (node_name == "rect") 
+                else if (node_name == "rect")
                 {
                     XmlRectLoad(node, image_, settings);
                 }
-                else if (node_name == "circle") 
+                else if (node_name == "circle")
                 {
                     XmlCircleLoad(node, image_, settings);
                 }
-                else if (node_name == "ellipse") 
+                else if (node_name == "ellipse")
                 {
                     XmlEllipseLoad(node, image_, settings);
                 }
-                else if (node_name == "line") 
+                else if (node_name == "line")
                 {
                     XmlLineLoad(node, image_, settings);
                 }
-                else if (node_name == "polyline") 
+                else if (node_name == "polyline")
                 {
                     XmlPolylineLoad(node, image_, settings);
                 }
@@ -746,13 +752,13 @@ namespace img_lib
             pugi::xml_document doc;
             pugi::xml_parse_result result = doc.load_file(path_.c_str());
 
-            if (!result) 
+            if (!result)
             {
                 throw std::runtime_error("File upload error: "s + std::string(result.description()));
             }
 
             pugi::xml_node svg_node = doc.child("svg");
-            if (!svg_node) 
+            if (!svg_node)
             {
                 throw std::runtime_error("The file does not contain a root element <svg>"s);
             }
