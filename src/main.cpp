@@ -7,7 +7,6 @@
 #include "png_image.h"
 #include "jpeg_image.h"
 #include "gif_image.h"
-#include "svg_image.h"
 
 #include "image.h"
 
@@ -16,7 +15,7 @@ using namespace std;
 using img_lib::Image;
 using img_lib::Path;
 
-enum class Format { PPM, BMP, TIFF, PNG, JPEG, ICO, GIF, SVG, UNKNOWN };
+enum class Format { PPM, BMP, TIFF, PNG, JPEG, ICO, GIF, UNKNOWN };
 
 Format GetFormatByExtension(const Path& input_file_)
 {
@@ -57,11 +56,6 @@ Format GetFormatByExtension(const Path& input_file_)
         return Format::GIF;
     }
 
-    if (ext == ".svg"s)
-    {
-        return Format::SVG;
-    }
-
     return Format::UNKNOWN;
 }
 
@@ -74,7 +68,6 @@ Image LoadImage(const Path& input_file_, Format format_)
     img_lib::jpeg_image::JpegImage jpeg_image;
     img_lib::ico_image::IcoImage ico_image;
     img_lib::gif_image::GifImage gif_image;
-    img_lib::svg_image::SvgImage svg_image;
 
     switch (format_) 
     {
@@ -98,9 +91,6 @@ Image LoadImage(const Path& input_file_, Format format_)
 
     case Format::GIF:
         return gif_image.LoadImageGIF(input_file_);
-
-    case Format::SVG:
-        return svg_image.LoadImageSVG(input_file_);
 
     default:
         throw std::runtime_error("Unsupported input file format"s);

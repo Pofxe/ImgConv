@@ -7,20 +7,17 @@ if(UNIX)
 	set(LIBPNG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libpng/lib/libpng.a)
 	set(LIBJPEG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/lib/libjpeg.a)
 	set(GIFLIB_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/giflib/lib/libgif.a)
-	set(PUGIXML_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/pugixml/lib/libpugixml.a)
 	set(LIBPNG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libpng/include)
 	set(LIBJPEG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/include)
 	set(GIFLIB_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/giflib/include)
-	set(PUGIXML_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/pugixml/include)
 elseif(WIN32)
 	set(LIBPNG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libpng/lib/libpng16.lib)
 	set(LIBJPEG_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/lib/jpeg.lib)
 	set(GIFLIB_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/giflib/lib/giflib.lib)
-	set(PUGIXML_LIBRARY ${CMAKE_SOURCE_DIR}/thirdparty/pugixml/lib/pugixml.lib)
 	set(LIBPNG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libpng/include)
 	set(LIBJPEG_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/libjpeg/include)
 	set(GIFLIB_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/giflib/include)
-        set(PUGIXML_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/pugixml/include)
+	
 else()
     message(FATAL_ERROR "Unsupported platform")
 endif()
@@ -35,7 +32,6 @@ set(SOURCES
     src/png_image.cpp
     src/jpeg_image.cpp
     src/gif_image.cpp
-    src/svg_image.cpp
 )
 
 set(HEADERS
@@ -47,9 +43,7 @@ set(HEADERS
     include/png_image.h
     include/jpeg_image.h
     include/gif_image.h
-    include/svg_image.h
     include/pack_defines.h
-    include/color_map.h
 )
 
 add_executable(ImgConv ${SOURCES} ${HEADERS})
@@ -58,9 +52,8 @@ target_include_directories(ImgConv
     PRIVATE "${LIBPNG_INCLUDE_DIR}"
             "${LIBJPEG_INCLUDE_DIR}"
 	    "${GIFLIB_INCLUDE_DIR}"
-	    "${PUGIXML_INCLUDE_DIR}"
             "${CMAKE_SOURCE_DIR}/include"
 )
 
-target_link_libraries(ImgConv PRIVATE ${LIBPNG_LIBRARY} ${LIBJPEG_LIBRARY} ${GIFLIB_LIBRARY} ${PUGIXML_LIBRARY})
+target_link_libraries(ImgConv PRIVATE ${LIBPNG_LIBRARY} ${LIBJPEG_LIBRARY} ${GIFLIB_LIBRARY})
 
