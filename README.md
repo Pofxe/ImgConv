@@ -8,10 +8,6 @@ Supports:
 - .jpg / .jpeg
 - .ico
 - .gif (static/grayscale)
-  
-Planning:
-- .png
-- modification .gif
 
 ## Install ##
 
@@ -25,6 +21,13 @@ mkdir build
 cd build
 cmake ..
 cmake --build .
+```
+
+```bash
+git clone https://github.com/Pofxe/ImgConv.git
+cd ImgConv
+docker build -t my_project_image .
+docker run -it --rm my_project_image
 ```
 
 ## Requirements ##
