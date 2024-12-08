@@ -8,7 +8,7 @@ Supports:
 - .jpg / .jpeg
 - .ico
 - .gif (static/grayscale)
-
+- .png
 ## Install ##
 
 
