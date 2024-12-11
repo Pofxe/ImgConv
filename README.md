@@ -22,14 +22,6 @@ cd build
 cmake ..
 cmake --build .
 ```
-
-```bash
-git clone https://github.com/Pofxe/ImgConv.git
-cd ImgConv
-docker build -t my_project_image .
-docker run -it --rm my_project_image
-```
-
 ## Requirements ##
 
 - [libpng](https://github.com/pnggroup/libpng.git)
